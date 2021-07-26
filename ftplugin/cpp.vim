@@ -4,9 +4,9 @@
 " of who authored which line in the file open in the current buffer.
 " The -M option can be customized (like -M[<num>]) 
 " where num is the lower bound on the 
-" of alphanumeric characters that Git must detect as
+" alphanumeric characters that Git must detect as
 " moving/copying within a file for it to associate those
-" lines with the parent commit.to look for a minimum 
+" lines with the parent commit, according to git blame docs 
 let blamelist = systemlist('git blame -M ' . @%)
 let blameless = []
 
