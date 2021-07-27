@@ -1,0 +1,31 @@
+"  test file for /ftplugin/cpp.vim
+"  may be needed to create a new test flow, as mine is currently
+"  based off exer, and we'd like to be able to run without added config
+"  can simply run :Vader here or :Vader <filename> maybe useful
+
+Before:
+  unlet! input expected
+
+Execute(source vimscript file):
+  let sourcefile = 'cpp.vim'
+  if !filereadable(sourcefile)
+    echoerr 'Something went wrong. File does not exist: '. sourcefile
+  endif
+  execute 'source' sourcefile
+
+Execute(confirm vim file is imported):
+  let expected = 'x'
+  AssertEqual expected, Vadertest() 
+
+Execute(tautology):
+  let input = ""
+  let expected = ""
+  AssertEqual expected, input
+
+"  TODO : tests for external files, starting with empty file 
+"  (unit integration)
+"  then:
+"  full file, no modifications
+"  completely deleted file
+"  various extensions
+"  .. non C++ file with C++ extension
