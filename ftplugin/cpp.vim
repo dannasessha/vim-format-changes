@@ -7,6 +7,11 @@
 "  alphanumeric characters that Git must detect as
 "  moving/copying within a file for it to associate those
 "  lines with the parent commit, according to git blame docs 
+"
+"  check for external plugins
+"  Plug 'https://github.com/junegunn/vader.vim'
+"  for tests just throw warning
+"  Plug 'https://github.com/rhysd/vim-clang-format.git'
 
 function! IngestGitBlame() abort
     let blamelist = systemlist('git blame -M ' . @%)
@@ -82,11 +87,21 @@ function! CreateRanges(cleanedlines) abort
     return range
 endfunction
 
-let blamelines = IngestGitBlame()
-let uncommittedlines = CollectUncommittedLines(blamelines)
-let cleanedlines = CleanLines(uncommittedlines)
-let ranges = CreateRanges(cleanedlines)
+function! FormatChanges() abort
+    let g:blamelines = IngestGitBlame()
+    let g:uncommittedlines = CollectUncommittedLines(g:blamelines)
+    let g:cleanedlines = CleanLines(g:uncommittedlines)
+    let g:ranges = CreateRanges(g:cleanedlines)
+    let g:reversedranges = reverse(deepcopy(g:ranges))
+    for range in g:reversedranges 
+       call clang_format#replace(range[0], range[1]) 
+    endfor
+endfunction
 
+call FormatChanges()
+
+
+" TODO: change hook from load to write<?>
 " --------------------TESTS-------------------------
 "  creating function for confirming Vader tests work
 function! Vadertest()
