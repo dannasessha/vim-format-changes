@@ -15,7 +15,7 @@ function! IngestGitBlame() abort
     return blamelist
 endfunction
 
-function! CollectUncommitedLines(blamelines) abort
+function! CollectUncommittedLines(blamelines) abort
     let blameless = []
 "  collect blameless (ie, output lines that have not been committed)
   for blame in a:blamelines
@@ -26,11 +26,11 @@ function! CollectUncommitedLines(blamelines) abort
   return blameless
 endfunction
 
-function! CleanLines(uncommitedlines) abort
+function! CleanLines(uncommittedlines) abort
 "  process output lines to only retain line numbers
   let temp = '' 
   let clean = [] 
-  for entry in a:uncommitedlines
+  for entry in a:uncommittedlines
     let temp = matchstr(entry, '\v\d+\)\ ') 
     call add(clean, str2nr(matchstr(temp, '\v\d+')))
   endfor
@@ -39,7 +39,7 @@ function! CleanLines(uncommitedlines) abort
 endfunction
 
 let blamelines = IngestGitBlame()
-let uncommitedlines = CollectUncommitedLines()
+let uncommittedlines = CollectUncommittedLines(blamelines)
 
 " --------------------TESTS-------------------------
 "  creating function for confirming Vader tests work
