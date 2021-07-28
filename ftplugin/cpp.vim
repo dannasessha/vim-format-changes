@@ -40,6 +40,7 @@ endfunction
 
 let blamelines = IngestGitBlame()
 let uncommittedlines = CollectUncommittedLines(blamelines)
+let cleanedlines = CleanLines(uncommittedlines)
 
 " --------------------TESTS-------------------------
 "  creating function for confirming Vader tests work
