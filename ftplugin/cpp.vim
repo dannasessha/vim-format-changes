@@ -6,27 +6,27 @@
 "  where num is the lower bound on the 
 "  alphanumeric characters that Git must detect as
 "  moving/copying within a file for it to associate those
-"  lines with the parent commit, according to git blame docs 
+"  lines with the parent commit, according to git annotate docs 
 "
 "  check for external plugins
 "  Plug 'https://github.com/junegunn/vader.vim'
 "  for tests just throw warning
 "  Plug 'https://github.com/rhysd/vim-clang-format.git'
 
-function! IngestGitBlame() abort
-    let blamelist = systemlist('git blame -M ' . @%)
-    return blamelist
+function! IngestGitAnnotate() abort
+    let annotatedlines = systemlist('git annotate -M ' . @%)
+    return annotatedlines
 endfunction
 
-function! CollectUncommittedLines(blamelines) abort
-    let blameless = []
-"  collect blameless (ie, output lines that have not been committed)
-  for blame in a:blamelines
-    if match(blame, '00000000 (Not Committed Yet ') == 0
-       call add(blameless, blame) 
+function! CollectUncommittedLines(annotatedlines) abort
+    let notannotated = []
+"  collect notannotated (ie, output lines that have not been committed)
+  for annotate in a:annotatedlines
+    if match(annotate, '00000000 (Not Committed Yet ') == 0
+       call add(notannotated, annotate) 
     endif
   endfor
-  return blameless
+  return notannotated
 endfunction
 
 function! CleanLines(uncommittedlines) abort
@@ -88,8 +88,8 @@ function! CreateRanges(cleanedlines) abort
 endfunction
 
 function! FormatChanges() abort
-    let g:blamelines = IngestGitBlame()
-    let g:uncommittedlines = CollectUncommittedLines(g:blamelines)
+    let g:annotatelines = IngestGitAnnotate()
+    let g:uncommittedlines = CollectUncommittedLines(g:annotatelines)
     let g:cleanedlines = CleanLines(g:uncommittedlines)
     let g:ranges = CreateRanges(g:cleanedlines)
     let g:reversedranges = reverse(deepcopy(g:ranges))
