@@ -98,13 +98,5 @@ function! FormatChanges() abort
     endfor
 endfunction
 
-call FormatChanges()
-
-
 " TODO: change hook from load to write<?>
-" --------------------TESTS-------------------------
-"  creating function for confirming Vader tests work
-function! Vadertest()
-    let testvalue = 'x'
-    return testvalue
-endfunction
+call FormatChanges()

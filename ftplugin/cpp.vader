@@ -13,14 +13,28 @@ Execute(source vimscript file):
   endif
   execute 'source' sourcefile
 
-Execute(confirm vim file is imported):
-  let expected = 'x'
-  AssertEqual expected, Vadertest() 
-
 Execute(tautology):
   let input = ""
   let expected = ""
   AssertEqual expected, input
+
+" calling IngestGitBlame() from Vader runs the command line 
+" invocation from its own custom
+" working directory. However, the stdout return to this call 
+" is still written as a string into a list.
+Execute(IngestGitBlame returns a list):
+  let input = type(IngestGitBlame())
+  let expected = v:t_list
+  AssertEqual expected, input
+
+Execute(if IngestGitBlame returns a list with contents, each item is a string.):
+  let input =  IngestGitBlame() 
+  let expected = v:t_string
+  for entry in input
+  AssertEqual expected, type(entry)
+  endfor
+
+  " this could be expanded into a collection of possible states for file changes
 
 "  TODO : tests for external files, starting with empty file 
 "  (unit integration)
