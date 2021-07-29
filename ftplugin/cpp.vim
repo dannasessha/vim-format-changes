@@ -88,12 +88,12 @@ function! CreateRanges(cleanedlines) abort
 endfunction
 
 function! FormatChanges() abort
-    let g:annotatelines = IngestGitAnnotate()
-    let g:uncommittedlines = CollectUncommittedLines(g:annotatelines)
-    let g:cleanedlines = CleanLines(g:uncommittedlines)
-    let g:ranges = CreateRanges(g:cleanedlines)
-    let g:reversedranges = reverse(deepcopy(g:ranges))
-    for range in g:reversedranges 
+    let annotatelines = IngestGitAnnotate()
+    let uncommittedlines = CollectUncommittedLines(annotatelines)
+    let cleanedlines = CleanLines(uncommittedlines)
+    let ranges = CreateRanges(cleanedlines)
+    let reversedranges = reverse(deepcopy(ranges))
+    for range in reversedranges 
        call clang_format#replace(range[0], range[1]) 
     endfor
 endfunction
