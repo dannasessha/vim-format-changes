@@ -19,14 +19,14 @@ function! IngestGitAnnotate() abort
 endfunction
 
 function! CollectUncommittedLines(annotatedlines) abort
-    let notcommitted = []
-"  collect notcommitted lines
+    let uncommittedlines = []
+"  collect uncommittedlines lines
   for annotate in a:annotatedlines
     if match(annotate, '00000000 (Not Committed Yet ') == 0
-       call add(notcommitted, annotate) 
+       call add(uncommittedlines, annotate) 
     endif
   endfor
-  return notcommitted
+  return uncommittedlines
 endfunction
 
 function! CleanLines(uncommittedlines) abort
