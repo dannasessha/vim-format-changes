@@ -18,17 +18,17 @@ Execute(tautology):
   let expected = ""
   AssertEqual expected, input
 
-" calling IngestGitAnnotate() from Vader runs the command line 
+" calling IngestGitBlame() from Vader runs the command line 
 " invocation from its own custom
 " working directory. However, the stdout return to this call 
 " is still written as a string into a list.
-Execute(IngestGitAnnotate returns a list):
-  let input = type(IngestGitAnnotate())
+Execute(IngestGitBlame returns a list):
+  let input = type(IngestGitBlame())
   let expected = v:t_list
   AssertEqual expected, input
 
-Execute(if IngestGitAnnotate returns a list with contents, each item is a string.):
-  let input =  IngestGitAnnotate() 
+Execute(if IngestGitBlame returns a list with contents, each item is a string.):
+  let input =  IngestGitBlame() 
   let expected = v:t_string
   for entry in input
   AssertEqual expected, type(entry)

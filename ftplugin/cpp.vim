@@ -6,15 +6,16 @@
 "  where num is the lower bound on the 
 "  alphanumeric characters that Git must detect as
 "  moving/copying within a file for it to associate those
-"  lines with the parent commit, according to git annotate docs 
+"  lines with the parent commit, Default 20, 
+"  according to git annotate docs 
 "
-"  check for external plugins
+"  TODO: check for external plugins
+"
+"  Dependencies : 
 "  Plug 'https://github.com/junegunn/vader.vim'
-"  for tests just throw warning
 "  Plug 'https://github.com/rhysd/vim-clang-format.git'
-"
 
-function! IngestGitAnnotate() abort
+function! IngestGitBlame() abort
     let annotatedlines = systemlist('git blame -M ' . @%)
     return annotatedlines
 endfunction
@@ -89,7 +90,7 @@ function! CreateRanges(cleanedlines) abort
 endfunction
 
 function! FormatChanges() abort
-    let annotatedlines = IngestGitAnnotate()
+    let annotatedlines = IngestGitBlame()
     let notcommittedlines = CollectUncommittedLines(annotatedlines)
     let cleanedlines = CleanLines(notcommittedlines)
     let ranges = CreateRanges(cleanedlines)
