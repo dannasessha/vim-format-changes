@@ -12,19 +12,20 @@
 "  Plug 'https://github.com/junegunn/vader.vim'
 "  for tests just throw warning
 "  Plug 'https://github.com/rhysd/vim-clang-format.git'
+"
 
 function! IngestGitAnnotate() abort
-    let annotatedlines = systemlist('git annotate -M ' . @%)
+    let annotatedlines = systemlist('git blame -M ' . @%)
     return annotatedlines
 endfunction
 
 function! CollectUncommittedLines(annotatedlines) abort
     let uncommittedlines = []
 "  collect uncommittedlines lines
-  for annotate in a:annotatedlines
-    if match(annotate, '00000000 (Not Committed Yet ') == 0
-       call add(uncommittedlines, annotate) 
-    endif
+  for line in a:annotatedlines
+    if match(line, '00000000 (Not Committed Yet ') == 0
+       call add(uncommittedlines, line) 
+   endif
   endfor
   return uncommittedlines
 endfunction
@@ -88,12 +89,12 @@ function! CreateRanges(cleanedlines) abort
 endfunction
 
 function! FormatChanges() abort
-    let annotatelines = IngestGitAnnotate()
-    let uncommittedlines = CollectUncommittedLines(annotatelines)
-    let cleanedlines = CleanLines(uncommittedlines)
-    let ranges = CreateRanges(cleanedlines)
-    let reversedranges = reverse(deepcopy(ranges))
-    for range in reversedranges 
+    let g:annotatedlines = IngestGitAnnotate()
+    let g:notcommittedlines = CollectUncommittedLines(g:annotatedlines)
+    let g:cleanedlines = CleanLines(g:notcommittedlines)
+    let g:ranges = CreateRanges(g:cleanedlines)
+    let g:reversedranges = reverse(deepcopy(g:ranges))
+    for range in g:reversedranges 
        call clang_format#replace(range[0], range[1]) 
     endfor
 endfunction
