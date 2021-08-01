@@ -15,7 +15,7 @@
 "  Plug 'https://github.com/junegunn/vader.vim'
 "  Plug 'https://github.com/rhysd/vim-clang-format.git'
 
-function! IngestGitBlame() abort
+function! IngestGitAnnotate() abort
     let l:annotatedlines = systemlist('git annotate --line-porcelain -M ' . @%)
     return l:annotatedlines
 endfunction
@@ -96,7 +96,7 @@ function! CreateRanges(cleanedlines) abort
 endfunction
 
 function! FormatChanges() abort
-    let l:annotatedlines = IngestGitBlame()
+    let l:annotatedlines = IngestGitAnnotate()
     let l:notcommittedlines = CollectUncommittedLines(l:annotatedlines)
     let l:cleanedlines = CleanLines(l:notcommittedlines)
     let l:ranges = CreateRanges(l:cleanedlines)
