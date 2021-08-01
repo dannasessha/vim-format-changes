@@ -16,7 +16,7 @@
 "  Plug 'https://github.com/rhysd/vim-clang-format.git'
 
 function! IngestGitBlame() abort
-    let l:annotatedlines = systemlist('git blame -M ' . @%)
+    let l:annotatedlines = systemlist('git annotate --line-porcelain -M ' . @%)
     return l:annotatedlines
 endfunction
 
@@ -24,7 +24,7 @@ function! CollectUncommittedLines(annotatedlines) abort
     let l:uncommittedlines = []
 "  collect uncommittedlines lines
   for l:line in a:annotatedlines
-    if match(l:line, '00000000 (Not Committed Yet ') == 0
+    if match(l:line, '0000000000000000000000000000000000000000 ') == 0
        call add(l:uncommittedlines, l:line) 
    endif
   endfor
@@ -33,11 +33,17 @@ endfunction
 
 function! CleanLines(uncommittedlines) abort
 "  process output lines to only retain line numbers
-  let l:temp = '' 
+  "let l:temp = '' 
   let l:clean = [] 
   for l:entry in a:uncommittedlines
-    let l:temp = matchstr(l:entry, '\v\d+\)\ ') 
-    call add(l:clean, str2nr(matchstr(l:temp, '\v\d+')))
+      " find beginning and ending indices (byte offset)
+      " of line number in uncommittedlines 
+      let g:startindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s')
+      let g:endindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s\d*')
+"      strpart({src}, {start} [, {len} [, {chars}]])
+    "let l:temp = matchstr(l:entry, '\v\d+\)\ ') 
+    call add(l:clean, strpart(l:entry, g:startindex, (g:endindex - g:startindex)))
+    "call add(l:clean, str2nr(matchstr(l:temp, '\v\d+')))
   endfor
 "  clean is now a list of altered line numbers
   return l:clean
