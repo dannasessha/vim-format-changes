@@ -16,61 +16,61 @@
 "  Plug 'https://github.com/rhysd/vim-clang-format.git'
 
 function! IngestGitBlame() abort
-    let annotatedlines = systemlist('git blame -M ' . @%)
-    return annotatedlines
+    let l:annotatedlines = systemlist('git blame -M ' . @%)
+    return l:annotatedlines
 endfunction
 
 function! CollectUncommittedLines(annotatedlines) abort
-    let uncommittedlines = []
+    let l:uncommittedlines = []
 "  collect uncommittedlines lines
-  for line in a:annotatedlines
-    if match(line, '00000000 (Not Committed Yet ') == 0
-       call add(uncommittedlines, line) 
+  for l:line in a:annotatedlines
+    if match(l:line, '00000000 (Not Committed Yet ') == 0
+       call add(l:uncommittedlines, l:line) 
    endif
   endfor
-  return uncommittedlines
+  return l:uncommittedlines
 endfunction
 
 function! CleanLines(uncommittedlines) abort
 "  process output lines to only retain line numbers
-  let temp = '' 
-  let clean = [] 
-  for entry in a:uncommittedlines
-    let temp = matchstr(entry, '\v\d+\)\ ') 
-    call add(clean, str2nr(matchstr(temp, '\v\d+')))
+  let l:temp = '' 
+  let l:clean = [] 
+  for l:entry in a:uncommittedlines
+    let l:temp = matchstr(l:entry, '\v\d+\)\ ') 
+    call add(l:clean, str2nr(matchstr(l:temp, '\v\d+')))
   endfor
 "  clean is now a list of altered line numbers
-  return clean
+  return l:clean
 endfunction
 
 function! CreateRanges(cleanedlines) abort
-    let range = []
-    let temp = []
-    for line in a:cleanedlines
-        if temp == [] 
-            call add(temp, line)
-        elseif len(temp) == 1
-            if line == temp[0] + 1
-                call add(temp, line)
+    let l:range = []
+    let l:temp = []
+    for l:line in a:cleanedlines
+        if l:temp == [] 
+            call add(l:temp, l:line)
+        elseif len(l:temp) == 1
+            if l:line == l:temp[0] + 1
+                call add(l:temp, l:line)
             else 
                 " the next number represents a new range.
                 " Therefore, a range must be entered...
-                call add(range, [temp[0], temp[0]])
+                call add(l:range, [l:temp[0], l:temp[0]])
                 " and a new one begun.
-                let temp = []
-                call add(temp, line)
+                let l:temp = []
+                call add(l:temp, l:line)
             endif
-        elseif len(temp) == 2
-            if line == temp[1] + 1
+        elseif len(l:temp) == 2
+            if l:line == l:temp[1] + 1
                 " this line number represents a continuation
                 " of the range being built.
-                let temp[1] = line
+                let l:temp[1] = l:line
             else
                 "this means the range in temp is complete!
                 "add the temp list (pair of numbers) to range
-                call add(range, temp)
-                let temp = []
-                call add(temp, line)
+                call add(l:range, l:temp)
+                let l:temp = []
+                call add(l:temp, l:line)
             endif
         else 
             echoerr 'Something went wrong. temp should have 0, 1, or 2 items'
@@ -78,25 +78,25 @@ function! CreateRanges(cleanedlines) abort
     endfor
     "now every line has been evaluated, but we still need
     "to cleanup uneven ranges.
-    if len(temp) == 1
+    if len(l:temp) == 1
         "the last line is a range of its own.
-        call add(temp, temp[0])
-        call add(range, temp)
-    elseif len(temp) == 2
+        call add(l:temp, l:temp[0])
+        call add(l:range, l:temp)
+    elseif len(l:temp) == 2
         "the last line completed a range
-        call add(range, temp)
+        call add(l:range, l:temp)
     endif
-    return range
+    return l:range
 endfunction
 
 function! FormatChanges() abort
-    let annotatedlines = IngestGitBlame()
-    let notcommittedlines = CollectUncommittedLines(annotatedlines)
-    let cleanedlines = CleanLines(notcommittedlines)
-    let ranges = CreateRanges(cleanedlines)
-    let reversedranges = reverse(deepcopy(ranges))
-    for range in reversedranges 
-       call clang_format#replace(range[0], range[1]) 
+    let l:annotatedlines = IngestGitBlame()
+    let l:notcommittedlines = CollectUncommittedLines(l:annotatedlines)
+    let l:cleanedlines = CleanLines(l:notcommittedlines)
+    let l:ranges = CreateRanges(l:cleanedlines)
+    let l:reversedranges = reverse(deepcopy(l:ranges))
+    for l:range in l:reversedranges 
+       call clang_format#replace(l:range[0], l:range[1]) 
     endfor
 endfunction
 
