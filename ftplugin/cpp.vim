@@ -31,9 +31,9 @@ function! CollectUncommittedLines(annotatedlines) abort
   return l:uncommittedlines
 endfunction
 
+"  process output (clean) to only retain line numbers
 function! CleanLines(uncommittedlines) abort
-  "  process output lines to only retain line numbers
-  let l:clean = [] 
+  let l:clean = []
   for l:entry in a:uncommittedlines
     " find beginning and ending indices (byte offset)
     " of line number in uncommittedlines 
@@ -42,12 +42,27 @@ function! CleanLines(uncommittedlines) abort
     "  coerce strings to numbers for calculating indices
     "  and to record line numbers in l:clean
     let l:linenumber = str2nr(strpart(l:entry, str2nr(l:startindex), (str2nr(l:endindex) - str2nr(l:startindex))))
-    " defense in case uncommittedlines is ever given invalid input
-    if l:linenumber != 0
+    " with no match the result is 0.
+    " this if is defense in case uncommittedlines is given 
+    " invalid input or l:linenumber is not a number
+    if l:linenumber != 0 && type(l:linenumber) == v:t_number
       call add(l:clean, l:linenumber)
+    else
+      echoerr 'Problem with linenumber!'
     endif
+    unlet l:entry
   endfor
-  "  clean is now a list of altered line numbers
+  "  clean is now a list of uncommitted line numbers
+
+  " defense check in case cleanedlines is in wrong order 
+  " aka invalid input
+  let l:lastline = 0
+  for l:line in l:clean
+    if l:line <= l:lastline
+      echoerr 'Invalid Input! cleanedlines are out of order or duplicated'
+    endif
+    let l:lastline = deepcopy(l:line)
+  endfor
   return l:clean
 endfunction
 
