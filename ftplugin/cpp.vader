@@ -67,7 +67,7 @@ Execute(CollectUncommittedLines throws an error with a null argument type):
 Execute(CollectUncommittedLines throws an error with a numbers in list):
   AssertThrows CollectUncommittedLines([1,2])
 
-Execute(CollectUncommittedLines throws an error with a floats in list):
+Execute(CollectUncommittedLines throws an error with floats in list):
   AssertThrows CollectUncommittedLines([1.86523, 2.7523])
 
 Execute(CollectUncommittedLines throws an error with two strings in list):
@@ -90,6 +90,11 @@ Execute(CollectUncommittedLines: No matching strings in lines, hash short by one
 
 Execute(CollectUncommittedLines: No matching strings in lines, hash long by one digit):
   let input = CollectUncommittedLines(['00000000000000000000000000000000000000000 1 1 1', 'string2'])
+  let expected = [] 
+  AssertEqual expected, input
+
+Execute(CollectUncommittedLines: No matching strings in lines, hash off by one digit substitution):
+  let input = CollectUncommittedLines(['0000000000100000000000000000000000000000 1 1 1', 'string2'])
   let expected = [] 
   AssertEqual expected, input
 
@@ -155,11 +160,57 @@ Execute(CleanLines throws an error with a null argument type):
 Execute(CleanLines throws an error with a numbers in list):
   AssertThrows CleanLines([1,2])
 
-Execute(CleanLines throws an error with a floats in list):
+Execute(CleanLines throws an error with floats in list):
   AssertThrows CleanLines([1.86523, 2.7523])
 
-"Execute(CollectUncommittedLines returns a list):
-"  let input = CollectUncommittedLines([])
+Execute(CleanLines throws an error with two strings in list):
+  AssertThrows CleanLines(["StringX", "StringY"])
+
+Execute(CleanLines returns empty list with invalid input [two non-matching strings] in list):
+  let input = CleanLines(["StringX", "StringY"])
+  let expected = []
+  AssertEqual expected, input 
+
+Execute(CleanLines returns the same length list as input: length):
+  let input = CleanLines(['0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1'])
+  let expected = 13 
+  AssertEqual expected, len(input) 
+
+Execute(CleanLines returns the same length list as input: list):
+  let input = CleanLines(['0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 1 1 1'])
+  AssertEqual v:t_list, type(input)
+
+
+Execute(CleanLines: No matching strings in list, if hash off by one digit substitution [invalid input]):
+  let input = CleanLines(['0000000000100000000000000000000000000000 1 1 1'])
+  let expected = [] 
+  AssertEqual expected, input
+
+  
+Execute(CleanLines: Simple match):
+  let input = CleanLines(['0000000000000000000000000000000000000000 1 1 1'])
+  let expected = [1] 
+  AssertEqual expected, input
+
+Execute(CleanLines: Two matching strings in uncommittedlines):
+  let input = CleanLines(['0000000000000000000000000000000000000000 1 1 2', '0000000000000000000000000000000000000000 2 2'])
+  let expected = [1, 2] 
+  AssertEqual expected, input
+
+Execute(CleanLines: Two matching strings in lines, with not-matched in between, quadruple digit lines [invalid input]):
+  let input = CleanLines(['0000000000000000000000000000000000000000 1111 1111 1', '19d605f410c83235ae7E757445e7d0866fcfe259 1112 1112 2', '19d605f410c83235ae7E757445e7d0866fcfe259 1113 1113', '0000000000000000000000000000000000000000 1114 1114 1'])
+  let expected = [1111, 1114] 
+  AssertEqual expected, input
+
+Execute(CleanLines: Many lines up to 5 digits):
+  let input = CleanLines(['0000000000000000000000000000000000000000 1 1 2', '0000000000000000000000000000000000000000 2 2', '0000000000000000000000000000000000000000 23 23 3', '0000000000000000000000000000000000000000 24 24', '0000000000000000000000000000000000000000 25 25', '0000000000000000000000000000000000000000 255 255 2', '0000000000000000000000000000000000000000 256 256', '0000000000000000000000000000000000000000 2701 2702 1', '0000000000000000000000000000000000000000 29752 29724 1'])
+  let expected = [1, 2, 23, 24, 25, 255, 256, 2702, 29724] 
+  AssertEqual expected, input
+
+" investigate negative numbers in createranges 
+
+"Execute(CleanedLines returns a list):
+"  let input = CleanedLines([])
 "  let expected = []
 "  AssertEqual expected, input
 

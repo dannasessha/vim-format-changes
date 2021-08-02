@@ -39,7 +39,13 @@ function! CleanLines(uncommittedlines) abort
       " of line number in uncommittedlines 
       let l:startindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s')
       let l:endindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s\d*')
-    call add(l:clean, strpart(l:entry, l:startindex, (l:endindex - l:startindex)))
+      "  coerce strings to numbers for calculating indices
+      "  and to record line numbers in l:clean
+      let l:linenumber = str2nr(strpart(l:entry, str2nr(l:startindex), (str2nr(l:endindex) - str2nr(l:startindex))))
+      " defense in case uncommittedlines is ever given invalid input
+    if l:linenumber != 0
+      call add(l:clean, l:linenumber)
+    endif
   endfor
   "  clean is now a list of altered line numbers
   return l:clean
