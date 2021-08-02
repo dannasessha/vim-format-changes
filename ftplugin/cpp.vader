@@ -40,37 +40,37 @@ Execute(CollectUncommittedLines returns a list):
   let expected = []
   AssertEqual expected, input
 
-Execute(CollectUncommittedLines returns an error with a string argument type):
+Execute(CollectUncommittedLines throws an error with a string argument type):
   AssertThrows CollectUncommittedLines("string")
 
-Execute(CollectUncommittedLines returns an error with a number argument type):
+Execute(CollectUncommittedLines throws an error with a number argument type):
   AssertThrows CollectUncommittedLines(1)
 
-Execute(CollectUncommittedLines returns an error with a float argument type):
+Execute(CollectUncommittedLines throws an error with a float argument type):
   AssertThrows CollectUncommittedLines(2.424241)
 
-Execute(CollectUncommittedLines returns an error with a dict argument type):
+Execute(CollectUncommittedLines throws an error with a dict argument type):
   let diction = #{a: 'aa', b: 'bb'}
   AssertThrows CollectUncommittedLines(diction)
 
   "TODO funcref
 
-Execute(CollectUncommittedLines returns an error with a boolean argument type):
+Execute(CollectUncommittedLines throws an error with a boolean argument type):
   AssertThrows CollectUncommittedLines(v:true)
 
-Execute(CollectUncommittedLines returns an error with a false boolean argument type):
+Execute(CollectUncommittedLines throws an error with a false boolean argument type):
   AssertThrows CollectUncommittedLines(v:false)
 
-Execute(CollectUncommittedLines returns an error with a null argument type):
+Execute(CollectUncommittedLines throws an error with a null argument type):
   AssertThrows CollectUncommittedLines(v:null)
 
-Execute(CollectUncommittedLines returns an error with a numbers in list):
+Execute(CollectUncommittedLines throws an error with a numbers in list):
   AssertThrows CollectUncommittedLines([1,2])
 
-Execute(CollectUncommittedLines returns an error with a floats in list):
+Execute(CollectUncommittedLines throws an error with a floats in list):
   AssertThrows CollectUncommittedLines([1.86523, 2.7523])
 
-Execute(CollectUncommittedLines returns an error with two strings in list):
+Execute(CollectUncommittedLines throws an error with two strings in list):
   AssertThrows CollectUncommittedLines(["StringX", "StringY"])
 
 Execute(CollectUncommittedLines ...or an equal with two strings in list):
@@ -128,34 +128,34 @@ Execute(CleanLines returns a list):
   let expected = []
   AssertEqual expected, input
 
-Execute(CleanLines returns an error with a string argument type):
+Execute(CleanLines throws an error with a string argument type):
   AssertThrows CleanLines("string")
 
-Execute(CleanLines returns an error with a number argument type):
+Execute(CleanLines throws an error with a number argument type):
   AssertThrows CleanLines(1)
 
-Execute(CleanLines returns an error with a float argument type):
+Execute(CleanLines throws an error with a float argument type):
   AssertThrows CleanLines(2.424241)
 
-Execute(CleanLines returns an error with a dict argument type):
+Execute(CleanLines throws an error with a dict argument type):
   let diction = #{a: 'aa', b: 'bb'}
   AssertThrows CleanLines(diction)
 
   "TODO funcref
 
-Execute(CleanLines returns an error with a boolean argument type):
+Execute(CleanLines throws an error with a boolean argument type):
   AssertThrows CleanLines(v:true)
 
-Execute(CleanLines returns an error with a false boolean argument type):
+Execute(CleanLines throws an error with a false boolean argument type):
   AssertThrows CleanLines(v:false)
 
-Execute(CleanLines returns an error with a null argument type):
+Execute(CleanLines throws an error with a null argument type):
   AssertThrows CleanLines(v:null)
 
-Execute(CleanLines returns an error with a numbers in list):
+Execute(CleanLines throws an error with a numbers in list):
   AssertThrows CleanLines([1,2])
 
-Execute(CleanLines returns an error with a floats in list):
+Execute(CleanLines throws an error with a floats in list):
   AssertThrows CleanLines([1.86523, 2.7523])
 
 "Execute(CollectUncommittedLines returns a list):

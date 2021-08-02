@@ -22,7 +22,7 @@ endfunction
 
 function! CollectUncommittedLines(annotatedlines) abort
     let l:uncommittedlines = []
-"  collect uncommittedlines lines
+  "  collect uncommittedlines lines
   for l:line in a:annotatedlines
     if match(l:line, '0000000000000000000000000000000000000000 ') == 0
        call add(l:uncommittedlines, l:line) 
@@ -32,20 +32,16 @@ function! CollectUncommittedLines(annotatedlines) abort
 endfunction
 
 function! CleanLines(uncommittedlines) abort
-"  process output lines to only retain line numbers
-  "let l:temp = '' 
+  "  process output lines to only retain line numbers
   let l:clean = [] 
   for l:entry in a:uncommittedlines
       " find beginning and ending indices (byte offset)
       " of line number in uncommittedlines 
       let l:startindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s')
       let l:endindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s\d*')
-"      strpart({src}, {start} [, {len} [, {chars}]])
-    "let l:temp = matchstr(l:entry, '\v\d+\)\ ') 
     call add(l:clean, strpart(l:entry, l:startindex, (l:endindex - l:startindex)))
-    "call add(l:clean, str2nr(matchstr(l:temp, '\v\d+')))
   endfor
-"  clean is now a list of altered line numbers
+  "  clean is now a list of altered line numbers
   return l:clean
 endfunction
 
@@ -82,8 +78,8 @@ function! CreateRanges(cleanedlines) abort
             echoerr 'Something went wrong. temp should have 0, 1, or 2 items'
         endif
     endfor
-    "now every line has been evaluated, but we still need
-    "to cleanup uneven ranges.
+    "  now every line has been evaluated, but we still need
+    "  to cleanup uneven ranges.
     if len(l:temp) == 1
         "the last line is a range of its own.
         call add(l:temp, l:temp[0])
