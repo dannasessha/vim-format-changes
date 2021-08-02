@@ -38,11 +38,11 @@ function! CleanLines(uncommittedlines) abort
   for l:entry in a:uncommittedlines
       " find beginning and ending indices (byte offset)
       " of line number in uncommittedlines 
-      let g:startindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s')
-      let g:endindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s\d*')
+      let l:startindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s')
+      let l:endindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s\d*')
 "      strpart({src}, {start} [, {len} [, {chars}]])
     "let l:temp = matchstr(l:entry, '\v\d+\)\ ') 
-    call add(l:clean, strpart(l:entry, g:startindex, (g:endindex - g:startindex)))
+    call add(l:clean, strpart(l:entry, l:startindex, (l:endindex - l:startindex)))
     "call add(l:clean, str2nr(matchstr(l:temp, '\v\d+')))
   endfor
 "  clean is now a list of altered line numbers

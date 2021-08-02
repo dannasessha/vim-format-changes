@@ -5,6 +5,7 @@
 
 Before:
   unlet! input expected
+  unlet! g:vader_exception g:vader_throwpoint
 
 Execute(source vimscript file):
   let sourcefile = 'cpp.vim'
@@ -34,7 +35,135 @@ Execute(if IngestGitAnnotate returns a list with contents, each item is a string
   AssertEqual expected, type(entry)
   endfor
 
-  " this could be expanded into a collection of possible states for file changes
+Execute(CollectUncommittedLines returns a list):
+  let input = CollectUncommittedLines([])
+  let expected = []
+  AssertEqual expected, input
+
+Execute(CollectUncommittedLines returns an error with a string argument type):
+  AssertThrows CollectUncommittedLines("string")
+
+Execute(CollectUncommittedLines returns an error with a number argument type):
+  AssertThrows CollectUncommittedLines(1)
+
+Execute(CollectUncommittedLines returns an error with a float argument type):
+  AssertThrows CollectUncommittedLines(2.424241)
+
+Execute(CollectUncommittedLines returns an error with a dict argument type):
+  let diction = #{a: 'aa', b: 'bb'}
+  AssertThrows CollectUncommittedLines(diction)
+
+  "TODO funcref
+
+Execute(CollectUncommittedLines returns an error with a boolean argument type):
+  AssertThrows CollectUncommittedLines(v:true)
+
+Execute(CollectUncommittedLines returns an error with a false boolean argument type):
+  AssertThrows CollectUncommittedLines(v:false)
+
+Execute(CollectUncommittedLines returns an error with a null argument type):
+  AssertThrows CollectUncommittedLines(v:null)
+
+Execute(CollectUncommittedLines returns an error with a numbers in list):
+  AssertThrows CollectUncommittedLines([1,2])
+
+Execute(CollectUncommittedLines returns an error with a floats in list):
+  AssertThrows CollectUncommittedLines([1.86523, 2.7523])
+
+Execute(CollectUncommittedLines returns an error with two strings in list):
+  AssertThrows CollectUncommittedLines(["StringX", "StringY"])
+
+Execute(CollectUncommittedLines ...or an equal with two strings in list):
+  let input = CollectUncommittedLines(["StringX", "StringY"])
+  let expected = []
+  AssertEqual expected, input 
+
+Execute(CollectUncommittedLines: One matching string in lines [would be returned from IngestGitAnnotate]):
+  let input = CollectUncommittedLines(['0000000000000000000000000000000000000000 1 1 1', 'string2'])
+  let expected = ['0000000000000000000000000000000000000000 1 1 1'] 
+  AssertEqual expected, input
+
+Execute(CollectUncommittedLines: No matching strings in lines, hash short by one digit):
+  let input = CollectUncommittedLines(['000000000000000000000000000000000000000 1 1 1', 'string2'])
+  let expected = [] 
+  AssertEqual expected, input
+
+Execute(CollectUncommittedLines: No matching strings in lines, hash long by one digit):
+  let input = CollectUncommittedLines(['00000000000000000000000000000000000000000 1 1 1', 'string2'])
+  let expected = [] 
+  AssertEqual expected, input
+
+Execute(CollectUncommittedLines: One matching string in lines with realistic values):
+  let input = CollectUncommittedLines(['0000000000000000000000000000000000000000 1 1 1', '19d605f410c83235ae7E757445e7d0866fcfe259 2 2 1'])
+  let expected = ['0000000000000000000000000000000000000000 1 1 1'] 
+  AssertEqual expected, input
+
+Execute(CollectUncommittedLines: Two matching string in lines [would be returned from IngestGitAnnotate]):
+  let input = CollectUncommittedLines(['0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 2 2 1'])
+  let expected = ['0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 2 2 1'] 
+  AssertEqual expected, input
+
+Execute(CollectUncommittedLines: Two matching string in lines with not-matched in between):
+  let input = CollectUncommittedLines(['0000000000000000000000000000000000000000 1 1 1', '19d605f410c83235ae7E757445e7d0866fcfe259 2 2 2', '19d605f410c83235ae7E757445e7d0866fcfe259 3 3', '0000000000000000000000000000000000000000 4 4 1'])
+  let expected = ['0000000000000000000000000000000000000000 1 1 1', '0000000000000000000000000000000000000000 4 4 1'] 
+  AssertEqual expected, input
+
+Execute(CollectUncommittedLines: Two matching string in lines with not-matched in between, double digit lines):
+  let input = CollectUncommittedLines(['0000000000000000000000000000000000000000 11 11 1', '19d605f410c83235ae7E757445e7d0866fcfe259 12 12 2', '19d605f410c83235ae7E757445e7d0866fcfe259 13 13', '0000000000000000000000000000000000000000 14 14 1'])
+  let expected = ['0000000000000000000000000000000000000000 11 11 1', '0000000000000000000000000000000000000000 14 14 1'] 
+  AssertEqual expected, input
+
+Execute(CollectUncommittedLines: Two matching string in lines with not-matched in between, triple digit lines):
+  let input = CollectUncommittedLines(['0000000000000000000000000000000000000000 111 111 1', '19d605f410c83235ae7E757445e7d0866fcfe259 112 112 2', '19d605f410c83235ae7E757445e7d0866fcfe259 113 113', '0000000000000000000000000000000000000000 114 114 1'])
+  let expected = ['0000000000000000000000000000000000000000 111 111 1', '0000000000000000000000000000000000000000 114 114 1'] 
+  AssertEqual expected, input
+
+Execute(CollectUncommittedLines: Two matching string in lines with not-matched in between, quadruple digit lines):
+  let input = CollectUncommittedLines(['0000000000000000000000000000000000000000 1111 1111 1', '19d605f410c83235ae7E757445e7d0866fcfe259 1112 1112 2', '19d605f410c83235ae7E757445e7d0866fcfe259 1113 1113', '0000000000000000000000000000000000000000 1114 1114 1'])
+  let expected = ['0000000000000000000000000000000000000000 1111 1111 1', '0000000000000000000000000000000000000000 1114 1114 1'] 
+  AssertEqual expected, input
+
+Execute(CleanLines returns a list):
+  let input = CleanLines([])
+  let expected = []
+  AssertEqual expected, input
+
+Execute(CleanLines returns an error with a string argument type):
+  AssertThrows CleanLines("string")
+
+Execute(CleanLines returns an error with a number argument type):
+  AssertThrows CleanLines(1)
+
+Execute(CleanLines returns an error with a float argument type):
+  AssertThrows CleanLines(2.424241)
+
+Execute(CleanLines returns an error with a dict argument type):
+  let diction = #{a: 'aa', b: 'bb'}
+  AssertThrows CleanLines(diction)
+
+  "TODO funcref
+
+Execute(CleanLines returns an error with a boolean argument type):
+  AssertThrows CleanLines(v:true)
+
+Execute(CleanLines returns an error with a false boolean argument type):
+  AssertThrows CleanLines(v:false)
+
+Execute(CleanLines returns an error with a null argument type):
+  AssertThrows CleanLines(v:null)
+
+Execute(CleanLines returns an error with a numbers in list):
+  AssertThrows CleanLines([1,2])
+
+Execute(CleanLines returns an error with a floats in list):
+  AssertThrows CleanLines([1.86523, 2.7523])
+
+"Execute(CollectUncommittedLines returns a list):
+"  let input = CollectUncommittedLines([])
+"  let expected = []
+"  AssertEqual expected, input
+
+"  testing could be expanded into a collection of possible states for file changes
 
 "  TODO : tests for external files, starting with empty file 
 "  (unit integration)
