@@ -16,17 +16,17 @@
 "  Plug 'https://github.com/rhysd/vim-clang-format.git'
 
 function! IngestGitAnnotate() abort
-    let l:annotatedlines = systemlist('git annotate --line-porcelain -M ' . @%)
-    return l:annotatedlines
+  let l:annotatedlines = systemlist('git annotate --line-porcelain -M ' . @%)
+  return l:annotatedlines
 endfunction
 
 function! CollectUncommittedLines(annotatedlines) abort
-    let l:uncommittedlines = []
+  let l:uncommittedlines = []
   "  collect uncommittedlines lines
   for l:line in a:annotatedlines
     if match(l:line, '0000000000000000000000000000000000000000 ') == 0
-       call add(l:uncommittedlines, l:line) 
-   endif
+      call add(l:uncommittedlines, l:line) 
+    endif
   endfor
   return l:uncommittedlines
 endfunction
@@ -35,14 +35,14 @@ function! CleanLines(uncommittedlines) abort
   "  process output lines to only retain line numbers
   let l:clean = [] 
   for l:entry in a:uncommittedlines
-      " find beginning and ending indices (byte offset)
-      " of line number in uncommittedlines 
-      let l:startindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s')
-      let l:endindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s\d*')
-      "  coerce strings to numbers for calculating indices
-      "  and to record line numbers in l:clean
-      let l:linenumber = str2nr(strpart(l:entry, str2nr(l:startindex), (str2nr(l:endindex) - str2nr(l:startindex))))
-      " defense in case uncommittedlines is ever given invalid input
+    " find beginning and ending indices (byte offset)
+    " of line number in uncommittedlines 
+    let l:startindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s')
+    let l:endindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s\d*')
+    "  coerce strings to numbers for calculating indices
+    "  and to record line numbers in l:clean
+    let l:linenumber = str2nr(strpart(l:entry, str2nr(l:startindex), (str2nr(l:endindex) - str2nr(l:startindex))))
+    " defense in case uncommittedlines is ever given invalid input
     if l:linenumber != 0
       call add(l:clean, l:linenumber)
     endif
@@ -52,60 +52,60 @@ function! CleanLines(uncommittedlines) abort
 endfunction
 
 function! CreateRanges(cleanedlines) abort
-    let l:range = []
-    let l:temp = []
-    for l:line in a:cleanedlines
-        if l:temp == [] 
-            call add(l:temp, l:line)
-        elseif len(l:temp) == 1
-            if l:line == l:temp[0] + 1
-                call add(l:temp, l:line)
-            else 
-                " the next number represents a new range.
-                " Therefore, a range must be entered...
-                call add(l:range, [l:temp[0], l:temp[0]])
-                " and a new one begun.
-                let l:temp = []
-                call add(l:temp, l:line)
-            endif
-        elseif len(l:temp) == 2
-            if l:line == l:temp[1] + 1
-                " this line number represents a continuation
-                " of the range being built.
-                let l:temp[1] = l:line
-            else
-                "this means the range in temp is complete!
-                "add the temp list (pair of numbers) to range
-                call add(l:range, l:temp)
-                let l:temp = []
-                call add(l:temp, l:line)
-            endif
-        else 
-            echoerr 'Something went wrong. temp should have 0, 1, or 2 items'
+  let l:range = []
+  let l:temp = []
+  for l:line in a:cleanedlines
+    if l:temp == [] 
+      call add(l:temp, l:line)
+    elseif len(l:temp) == 1
+      if l:line == l:temp[0] + 1
+        call add(l:temp, l:line)
+      else 
+        " the next number represents a new range.
+        " Therefore, a range must be entered...
+        call add(l:range, [l:temp[0], l:temp[0]])
+        " and a new one begun.
+        let l:temp = []
+        call add(l:temp, l:line)
         endif
-    endfor
-    "  now every line has been evaluated, but we still need
-    "  to cleanup uneven ranges.
-    if len(l:temp) == 1
-        "the last line is a range of its own.
-        call add(l:temp, l:temp[0])
-        call add(l:range, l:temp)
     elseif len(l:temp) == 2
-        "the last line completed a range
+      if l:line == l:temp[1] + 1
+        " this line number represents a continuation
+        " of the range being built.
+        let l:temp[1] = l:line
+      else
+        "this means the range in temp is complete!
+        "add the temp list (pair of numbers) to range
         call add(l:range, l:temp)
+        let l:temp = []
+        call add(l:temp, l:line)
+      endif
+    else 
+      echoerr 'Something went wrong. temp should have 0, 1, or 2 items'
     endif
-    return l:range
+  endfor
+  "  now every line has been evaluated, but we still need
+  "  to cleanup uneven ranges.
+  if len(l:temp) == 1
+    "the last line is a range of its own.
+    call add(l:temp, l:temp[0])
+    call add(l:range, l:temp)
+  elseif len(l:temp) == 2
+    "the last line completed a range
+    call add(l:range, l:temp)
+  endif
+  return l:range
 endfunction
 
 function! FormatChanges() abort
-    let l:annotatedlines = IngestGitAnnotate()
-    let l:notcommittedlines = CollectUncommittedLines(l:annotatedlines)
-    let l:cleanedlines = CleanLines(l:notcommittedlines)
-    let l:ranges = CreateRanges(l:cleanedlines)
-    let l:reversedranges = reverse(deepcopy(l:ranges))
-    for l:range in l:reversedranges 
-       call clang_format#replace(l:range[0], l:range[1]) 
-    endfor
+  let l:annotatedlines = IngestGitAnnotate()
+  let l:notcommittedlines = CollectUncommittedLines(l:annotatedlines)
+  let l:cleanedlines = CleanLines(l:notcommittedlines)
+  let l:ranges = CreateRanges(l:cleanedlines)
+  let l:reversedranges = reverse(deepcopy(l:ranges))
+  for l:range in l:reversedranges 
+    call clang_format#replace(l:range[0], l:range[1]) 
+  endfor
 endfunction
 
 " TODO: change hook from load to write<?>
