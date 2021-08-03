@@ -205,12 +205,24 @@ Execute(CleanLines: Many lines up to 5 digits):
   let expected = [1, 2, 23, 24, 25, 255, 256, 2702, 29724] 
   AssertEqual expected, input
 
-Execute(CleanLines: Many lines up to 5 digits, one out of order [invalid input]):
-  "let input = 
+Execute(CleanLines: Throws error with many lines up to 5 digits, but one out of order [invalid input]):
   AssertThrows CleanLines(['0000000000000000000000000000000000000000 1 1 2', '0000000000000000000000000000000000000000 23 23 3', '0000000000000000000000000000000000000000 2 2', '0000000000000000000000000000000000000000 24 24', '0000000000000000000000000000000000000000 25 25', '0000000000000000000000000000000000000000 255 255 2', '0000000000000000000000000000000000000000 256 256', '0000000000000000000000000000000000000000 2701 2702 1', '0000000000000000000000000000000000000000 29752 29724 1'])
-  "let expected = error  
-  "AssertEqual expected, input
 
+Execute(CreateRanges: Basic range, just 1 line):
+  let input = CreateRanges([1])
+  let expected = [[1, 1]]
+  AssertEqual expected, input
+
+Execute(CreateRanges: Basic range, two lines):
+  let input = CreateRanges([1, 2])
+  let expected = [[1, 2]]
+  AssertEqual expected, input
+
+"Execute(CreateRanges: Basic range, two lines):
+  "let input = [1, 2]
+  "let expected = [[1, 1]]
+  "AssertThrows
+  "AssertEqual expected, input
 " investigate negative numbers in createranges 
 
 "Execute(CleanedLines returns a list):

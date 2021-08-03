@@ -54,7 +54,7 @@ function! CleanLines(uncommittedlines) abort
   endfor
   "  clean is now a list of uncommitted line numbers
 
-  " defense check in case cleanedlines is in wrong order 
+  " defensive check in case cleanedlines is in wrong order 
   " aka invalid input
   let l:lastline = 0
   for l:line in l:clean
@@ -98,6 +98,7 @@ function! CreateRanges(cleanedlines) abort
     else 
       echoerr 'Something went wrong. temp should have 0, 1, or 2 items'
     endif
+    unlet l:line
   endfor
   "  now every line has been evaluated, but we still need
   "  to cleanup uneven ranges.
