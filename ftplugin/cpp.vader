@@ -18,9 +18,9 @@ Execute(tautology):
   AssertEqual expected, input
 
 " calling IngestGitAnnotate() from Vader runs the command line 
-" invocation from its own custom
-" working directory. However, the stdout return to this call 
-" is still written as a string into a list.
+" invocation from its own custom working directory. 
+" However, the stdout return to this call is still written 
+" as a string into a list.
 Execute(IngestGitAnnotate returns a list):
   let input = type(IngestGitAnnotate())
   let expected = v:t_list
@@ -170,12 +170,12 @@ Execute(CleanLines throws error if line numbers are duplicated):
 Execute(CleanLines throws error if line numbers are out of order):
   AssertThrows CleanLines(['0000000000000000000000000000000000000000 2 2', '0000000000000000000000000000000000000000 1 1 2'])
 
-Execute(CleanLines returns the same length list as input: length):
+Execute(CleanLines returns the same length list as input: length of list):
   let input = CleanLines(['0000000000000000000000000000000000000000 1 1 13', '0000000000000000000000000000000000000000 2 2', '0000000000000000000000000000000000000000 3 3', '0000000000000000000000000000000000000000 4 4', '0000000000000000000000000000000000000000 5 5', '0000000000000000000000000000000000000000 6 6', '0000000000000000000000000000000000000000 7 7', '0000000000000000000000000000000000000000 8 8', '0000000000000000000000000000000000000000 9 9', '0000000000000000000000000000000000000000 10 10', '0000000000000000000000000000000000000000 11 11', '0000000000000000000000000000000000000000 12 12', '0000000000000000000000000000000000000000 13 13'])
   let expected = 13 
   AssertEqual expected, len(input) 
 
-Execute(CleanLines returns the same length list as input: list):
+Execute(CleanLines returns the same length list as input: list type):
   let input = CleanLines(['0000000000000000000000000000000000000000 1 1 13', '0000000000000000000000000000000000000000 2 2', '0000000000000000000000000000000000000000 3 3', '0000000000000000000000000000000000000000 4 4', '0000000000000000000000000000000000000000 5 5', '0000000000000000000000000000000000000000 6 6', '0000000000000000000000000000000000000000 7 7', '0000000000000000000000000000000000000000 8 8', '0000000000000000000000000000000000000000 9 9', '0000000000000000000000000000000000000000 10 10', '0000000000000000000000000000000000000000 11 11', '0000000000000000000000000000000000000000 12 12', '0000000000000000000000000000000000000000 13 13'])
   AssertEqual v:t_list, type(input)
 
@@ -184,6 +184,12 @@ Execute(CleanLines: Throws error if no matching strings in list, if hash off by 
   
 Execute(CleanLines: Throws error if no matching strings in list, noise [invalid input]):
   AssertThrows CleanLines(['&%@EbV@U^!R(&lhB!O*61UYTv79nF!&^T1', 'JtHTExUt6d$756G{]KNMN&^r%s4sp8i7G*I&654d&%$sFV'])
+
+Execute(CleanLines: Throws error with zero line number):
+  AssertThrows CleanLines(['0000000000000000000000000000000000000000 0 0 1'])
+
+Execute(CleanLines: Throws error with negative line number):
+  AssertThrows CleanLines(['0000000000000000000000000000000000000000 -1 -1 1'])
 
 Execute(CleanLines: Simple match):
   let input = CleanLines(['0000000000000000000000000000000000000000 1 1 1'])
@@ -206,24 +212,90 @@ Execute(CleanLines: Many lines up to 5 digits):
 Execute(CleanLines: Throws error with many lines up to 5 digits, but one out of order [invalid input]):
   AssertThrows CleanLines(['0000000000000000000000000000000000000000 1 1 2', '0000000000000000000000000000000000000000 23 23 3', '0000000000000000000000000000000000000000 2 2', '0000000000000000000000000000000000000000 24 24', '0000000000000000000000000000000000000000 25 25', '0000000000000000000000000000000000000000 255 255 2', '0000000000000000000000000000000000000000 256 256', '0000000000000000000000000000000000000000 2701 2702 1', '0000000000000000000000000000000000000000 29752 29724 1'])
 
+Execute(CleanLines: Throws error with many lines up to 5 digits, but one is duplicated [invalid input]):
+  AssertThrows CleanLines(['0000000000000000000000000000000000000000 1 1 2', '0000000000000000000000000000000000000000 2 2', '0000000000000000000000000000000000000000 2 2', '0000000000000000000000000000000000000000 24 24', '0000000000000000000000000000000000000000 25 25', '0000000000000000000000000000000000000000 255 255 2', '0000000000000000000000000000000000000000 256 256', '0000000000000000000000000000000000000000 2701 2702 1', '0000000000000000000000000000000000000000 29752 29724 1'])
+
 Execute(CreateRanges: Basic range, just 1 line):
   let input = CreateRanges([1])
   let expected = [[1, 1]]
   AssertEqual expected, input
 
-Execute(CreateRanges: Basic range, two lines):
+Execute(CreateRanges: Basic range, two line span):
   let input = CreateRanges([1, 2])
   let expected = [[1, 2]]
   AssertEqual expected, input
 
 "TODO no uncommittedlines
 
+Execute(CreateRanges: Basic range, 9 line span):
+  let input = CreateRanges([1, 2, 3, 4, 5, 6, 7, 8, 9])
+  let expected = [[1, 9]]
+  AssertEqual expected, input
+
+Execute(CreateRanges: Two spans):
+  let input = CreateRanges([1, 2, 3, 4, 6, 7, 8, 9])
+  let expected = [[1, 4],[6, 9]]
+  AssertEqual expected, input
+
+Execute(CreateRanges: Two spans, two digit line numbers):
+  let input = CreateRanges([21, 22, 23, 24, 26, 27, 28, 29])
+  let expected = [[21, 24],[26, 29]]
+  AssertEqual expected, input
+
+Execute(CreateRanges: Two spans, three digit line numbers):
+  let input = CreateRanges([321, 322, 323, 324, 326, 327, 328, 329])
+  let expected = [[321, 324],[326, 329]]
+  AssertEqual expected, input
+
+Execute(CreateRanges: Two spans, four digit line numbers):
+  let input = CreateRanges([4321, 4322, 4323, 4324, 4326, 4327, 4328, 4329])
+  let expected = [[4321, 4324],[4326, 4329]]
+  AssertEqual expected, input
+
+Execute(CreateRanges: Two spans, five digit line numbers):
+  let input = CreateRanges([54321, 54322, 54323, 54324, 54326, 54327, 54328, 54329])
+  let expected = [[54321, 54324],[54326, 54329]]
+  AssertEqual expected, input
+
+Execute(CreateRanges: Multiple spans and single line ranges, up to seven digit line numbers, ranges continue across line digit number changes):
+  let input = CreateRanges([1, 23, 24, 25, 333, 334, 335, 999, 1000, 1001, 1002, 31337, 54321, 54322, 54323, 54324, 54326, 54327, 54328, 54329, 7654321])
+  let expected = [[1,1],[23,25],[333,335],[999,1002],[31337,31337],[54321, 54324],[54326, 54329],[7654321,7654321]]
+  AssertEqual expected, input
+
+Execute(CreateRanges: empty list [invalid input] still does not produce a range):
+  let input = CreateRanges([])
+  let expected = []
+  AssertEqual expected, input
+
+Execute(CreateRanges throws an error with a string argument type):
+  AssertThrows CreateRanges("string")
+
+Execute(CreateRanges throws an error with a number argument type):
+  AssertThrows CreateRanges(1)
+
+Execute(CreateRanges throws an error with a float argument type):
+  AssertThrows CreateRanges(2.424241)
+
+Execute(CreateRanges throws an error with a dict argument type):
+  let diction = #{a: 'aa', b: 'bb'}
+  AssertThrows CreateRanges(diction)
+
+  "TODO funcref
+
+Execute(CreateRanges throws an error with a boolean argument type):
+  AssertThrows CreateRanges(v:true)
+
+Execute(CreateRanges throws an error with a false boolean argument type):
+  AssertThrows CreateRanges(v:false)
+
+Execute(CreateRanges throws an error with a null argument type):
+  AssertThrows CreateRanges(v:null)
+
 "Execute(CreateRanges: Basic range, two lines):
   "let input = [1, 2]
   "let expected = [[1, 1]]
   "AssertThrows
   "AssertEqual expected, input
-" investigate negative numbers in createranges 
 
 "Execute(CleanedLines returns a list):
 "  let input = CleanedLines([])
@@ -233,6 +305,7 @@ Execute(CreateRanges: Basic range, two lines):
 "  testing could be expanded into a collection of possible states for file changes
 
 "  TODO : tests for external files, starting with empty file 
+"  vader_exception and vader_throwpoint
 "  (unit integration)
 "  then:
 "  full file, no modifications

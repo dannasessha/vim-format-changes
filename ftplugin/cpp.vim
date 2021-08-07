@@ -1,10 +1,15 @@
 " this filename should match the buffer's filetype selected in ftdetect
 "
-" relys on file extension
-" this plugin does not provide provide protections from or check for files
-" with 
+" relies on accurate, normative file extensions! 
+" this plugin does not provide protections from files which 
+" have mismatched languages and extensions.
 
-" currently only designed for linux + bash 
+" Dependency: 
+" clang-format in PATH
+" ...(and for testing): 
+" Plug 'https://github.com/junegunn/vader.vim'
+
+" currently only designed for linux + bash + C++ 
 
 " produce a list populated by a complete line-by-line output 
 " of who authored which line in the file open in the current buffer.
@@ -14,11 +19,6 @@
 " moving/copying within a file for it to associate those
 " lines with the parent commit, Default 20, 
 " according to git annotate docs 
-"
-" Dependency: 
-" clang-format in PATH
-" ...(for testing): 
-" Plug 'https://github.com/junegunn/vader.vim'
 
 function! IngestGitAnnotate() abort
   let l:annotatedlines = systemlist('git annotate --line-porcelain -M ' . @%)
@@ -70,7 +70,7 @@ function! CleanLines(uncommittedlines) abort
   endfor
   return l:clean
 endfunction
-
+:
 function! CreateRanges(cleanedlines) abort
   let l:range = []
   let l:temp = []
