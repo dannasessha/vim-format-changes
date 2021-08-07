@@ -1,4 +1,8 @@
 " this filename should match the buffer's filetype selected in ftdetect
+"
+" relys on file extension
+" this plugin does not provide provide protections from or check for files
+" with 
 
 " currently only designed for linux + bash 
 
@@ -140,11 +144,14 @@ endfunction
 
 augroup CPP
 autocmd BufWritePost *.h call FormatChanges() | :e 
+autocmd BufWritePost *.c call FormatChanges() | :e 
+autocmd BufWritePost *.cxx call FormatChanges() | :e 
+autocmd BufWritePost *.hpp call FormatChanges() | :e 
 autocmd BufWritePost *.cpp call FormatChanges() | :e | augroup END
 
 " TODO: 
 " finish tests
 " move code to more noramtive dirs
 " add functionality for python
-" check functionality for other clang-format targets?
+" add support for other clang-format targets?
 " logo
