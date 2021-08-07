@@ -139,7 +139,10 @@ function! FormatChanges() abort
 endfunction
 
 "call FormatChanges()
+augroup CPP
 autocmd BufWritePost *.h call FormatChanges() | :e 
+autocmd BufWritePost *.cpp call FormatChanges() | :e | augroup END
+
 " TODO: 
 " finish tests
 " move code to more noramtive dirs
