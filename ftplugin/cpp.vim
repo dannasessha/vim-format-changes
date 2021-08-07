@@ -1,20 +1,20 @@
-"  this filename should match the buffer's filetype selected in ftdetect
+" this filename should match the buffer's filetype selected in ftdetect
 
-"  currently only designed for linux + bash 
+" currently only designed for linux + bash 
 
-"  produce a list populated by a complete line-by-line output 
-"  of who authored which line in the file open in the current buffer.
-"  The -M option can be customized (like -M[<num>]) 
-"  where num is the lower bound on the 
-"  alphanumeric characters that Git must detect as
-"  moving/copying within a file for it to associate those
-"  lines with the parent commit, Default 20, 
-"  according to git annotate docs 
+" produce a list populated by a complete line-by-line output 
+" of who authored which line in the file open in the current buffer.
+" The -M option can be customized (like -M[<num>]) 
+" where num is the lower bound on the 
+" alphanumeric characters that Git must detect as
+" moving/copying within a file for it to associate those
+" lines with the parent commit, Default 20, 
+" according to git annotate docs 
 "
-"  Dependency: 
-"  clang-format in PATH
-"  ...(for testing): 
-"  Plug 'https://github.com/junegunn/vader.vim'
+" Dependency: 
+" clang-format in PATH
+" ...(for testing): 
+" Plug 'https://github.com/junegunn/vader.vim'
 
 function! IngestGitAnnotate() abort
   let l:annotatedlines = systemlist('git annotate --line-porcelain -M ' . @%)
@@ -23,7 +23,7 @@ endfunction
 
 function! CollectUncommittedLines(annotatedlines) abort
   let l:uncommittedlines = []
-  "  collect uncommittedlines lines
+  " collect uncommittedlines lines
   for l:line in a:annotatedlines
     if match(l:line, '0000000000000000000000000000000000000000 ') == 0
       call add(l:uncommittedlines, l:line) 
@@ -40,8 +40,8 @@ function! CleanLines(uncommittedlines) abort
     " of line number in uncommittedlines 
     let l:startindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s')
     let l:endindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s\d*')
-    "  coerce strings to numbers for calculating indices
-    "  and to record line numbers in l:clean
+    " coerce strings to numbers for calculating indices
+    " and to record line numbers in l:clean
     let l:linenumber = str2nr(strpart(l:entry, str2nr(l:startindex), (str2nr(l:endindex) - str2nr(l:startindex))))
     " with no match the result is 0.
     " defense in case uncommittedlines is given 
@@ -53,7 +53,7 @@ function! CleanLines(uncommittedlines) abort
     endif
     unlet l:entry
   endfor
-  "  clean is now a list of uncommitted line numbers
+  " clean is now a list of uncommitted line numbers
 
   " defensive check in case cleanedlines is in wrong order 
   " aka invalid input
@@ -90,8 +90,8 @@ function! CreateRanges(cleanedlines) abort
         " of the range being built.
         let l:temp[1] = l:line
       else
-        "this means the range in temp is complete!
-        "add the temp list (pair of numbers) to range
+        " this means the range in temp is complete!
+        " add the temp list (pair of numbers) to range
         call add(l:range, l:temp)
         let l:temp = []
         call add(l:temp, l:line)
@@ -101,14 +101,14 @@ function! CreateRanges(cleanedlines) abort
     endif
     unlet l:line
   endfor
-  "  now every line has been evaluated, but we still need
-  "  to cleanup uneven ranges.
+  " now every line has been evaluated, but we still need
+  " to cleanup uneven ranges.
   if len(l:temp) == 1
-    "the last line is a range of its own.
+    " the last line is a range of its own.
     call add(l:temp, l:temp[0])
     call add(l:range, l:temp)
   elseif len(l:temp) == 2
-    "the last line completed a range
+    " the last line completed a range
     call add(l:range, l:temp)
   endif
   return l:range
@@ -119,7 +119,7 @@ function! MakeArguments(ranges) abort
   for l:range in a:ranges 
     let g:args .= printf(' --lines=%d:%d', l:range[0], l:range[1])
   endfor
-  "style options are currently left to the user to handle
+  " style options are currently left to the user to handle
   let g:filename = expand('%')
   let g:args .= printf(' -i %s', g:filename) 
   return g:args
@@ -138,7 +138,6 @@ function! FormatChanges() abort
   call system('clang-format' . g:arguments) 
 endfunction
 
-"call FormatChanges()
 augroup CPP
 autocmd BufWritePost *.h call FormatChanges() | :e 
 autocmd BufWritePost *.cpp call FormatChanges() | :e | augroup END
