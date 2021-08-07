@@ -1,5 +1,7 @@
 "  this filename should match the buffer's filetype selected in ftdetect
 
+"  currently only designed for linux + bash 
+
 "  produce a list populated by a complete line-by-line output 
 "  of who authored which line in the file open in the current buffer.
 "  The -M option can be customized (like -M[<num>]) 
@@ -9,11 +11,8 @@
 "  lines with the parent commit, Default 20, 
 "  according to git annotate docs 
 "
-"  TODO: check for external plugins
-"
-"  Dependencies : 
+"  Dependency (for testing): 
 "  Plug 'https://github.com/junegunn/vader.vim'
-"  Plug 'https://github.com/rhysd/vim-clang-format.git'
 
 function! IngestGitAnnotate() abort
   let l:annotatedlines = systemlist('git annotate --line-porcelain -M ' . @%)
@@ -43,8 +42,8 @@ function! CleanLines(uncommittedlines) abort
     "  and to record line numbers in l:clean
     let l:linenumber = str2nr(strpart(l:entry, str2nr(l:startindex), (str2nr(l:endindex) - str2nr(l:startindex))))
     " with no match the result is 0.
-    " this if is defense in case uncommittedlines is given 
-    " invalid input or l:linenumber is not a number
+    " defense in case uncommittedlines is given 
+    " invalid input, or l:linenumber is not a number
     if l:linenumber != 0 && type(l:linenumber) == v:t_number
       call add(l:clean, l:linenumber)
     else
@@ -113,16 +112,39 @@ function! CreateRanges(cleanedlines) abort
   return l:range
 endfunction
 
-function! FormatChanges() abort
-  let l:annotatedlines = IngestGitAnnotate()
-  let l:notcommittedlines = CollectUncommittedLines(l:annotatedlines)
-  let l:cleanedlines = CleanLines(l:notcommittedlines)
-  let l:ranges = CreateRanges(l:cleanedlines)
-  let l:reversedranges = reverse(deepcopy(l:ranges))
-  for l:range in l:reversedranges 
-    call clang_format#replace(l:range[0], l:range[1]) 
+function! MakeArguments(ranges) abort
+  let g:args = ''
+  for l:range in a:ranges 
+    "call clang_format#replace(g:range[0], g:range[1]) 
+    let g:args .= printf(' --lines=%d:%d', l:range[0], l:range[1])
   endfor
+  "style options are currently left to the user to handle
+  let g:filename = expand('%')
+  let g:args .= printf(' -i %s', g:filename) 
+  return g:args
 endfunction
 
-" TODO: change hook from load to write<?>
+function! FormatChanges() abort
+  let g:annotatedlines = IngestGitAnnotate()
+  let g:notcommittedlines = CollectUncommittedLines(g:annotatedlines)
+  " if no ranges, stop.
+  if g:notcommittedlines == []
+    return
+  endif
+  let g:cleanedlines = CleanLines(g:notcommittedlines)
+  let g:ranges = CreateRanges(g:cleanedlines)
+  let g:arguments = MakeArguments(g:ranges)
+  call system('clang-format' . g:arguments) 
+endfunction
+
 call FormatChanges()
+" not working yet:
+" autocmd BufWritePost *.h call FormatChanges()
+" TODO: 
+" finish tests
+" move code to more noramtive dirs
+" change hook from load to write?
+" ...BufWriteCmd vs BufWritePre
+" add functionality for python
+" trigger on write
+" logo
