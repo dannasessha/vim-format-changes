@@ -138,14 +138,11 @@ function! FormatChanges() abort
   call system('clang-format' . g:arguments) 
 endfunction
 
-call FormatChanges()
-" not working yet:
-" autocmd BufWritePost *.h call FormatChanges()
+"call FormatChanges()
+autocmd BufWritePost *.h call FormatChanges() | :e 
 " TODO: 
 " finish tests
 " move code to more noramtive dirs
-" change hook from load to write?
-" ...BufWriteCmd vs BufWritePre
 " add functionality for python
-" trigger on write
+" check functionality for other clang-format targets?
 " logo
