@@ -1,6 +1,4 @@
 "  test file for /ftplugin/cpp.vim
-"  may be needed to create a new test flow, as mine is currently
-"  based off exer, and we'd like to be able to run without added config
 "  can simply run :Vader here or :Vader <filename> maybe useful
 
 Before:

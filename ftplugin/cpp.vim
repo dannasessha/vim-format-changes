@@ -11,7 +11,9 @@
 "  lines with the parent commit, Default 20, 
 "  according to git annotate docs 
 "
-"  Dependency (for testing): 
+"  Dependency: 
+"  clang-format in PATH
+"  ...(for testing): 
 "  Plug 'https://github.com/junegunn/vader.vim'
 
 function! IngestGitAnnotate() abort
@@ -115,7 +117,6 @@ endfunction
 function! MakeArguments(ranges) abort
   let g:args = ''
   for l:range in a:ranges 
-    "call clang_format#replace(g:range[0], g:range[1]) 
     let g:args .= printf(' --lines=%d:%d', l:range[0], l:range[1])
   endfor
   "style options are currently left to the user to handle
