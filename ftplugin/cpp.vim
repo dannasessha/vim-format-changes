@@ -1,15 +1,22 @@
 " this filename should match the buffer's filetype selected in ftdetect
+" currently only designed for linux + bash + C++ 
 "
 " relies on accurate, normative file extensions! 
+" this plugin sets the 'filetype' options to cpp (C++) for 
+" *.cpp , *.c, *.cxx, *.h and *.hpp on buffer read (BufRead)
+" or creating a new file matching those extensions (BufNewFile).
+" The same file types will have the plugin's logic (accessing git's 
+" database and then a selective clang-format run on them) 
+" on write (BufWritePost).
+"
 " this plugin does not provide protections from files which 
 " have mismatched languages and extensions.
 
 " Dependency: 
+" git in PATH
 " clang-format in PATH
 " ...(and for testing): 
 " Plug 'https://github.com/junegunn/vader.vim'
-
-" currently only designed for linux + bash + C++ 
 
 " produce a list populated by a complete line-by-line output 
 " of who authored which line in the file open in the current buffer.
@@ -18,7 +25,7 @@
 " alphanumeric characters that Git must detect as
 " moving/copying within a file for it to associate those
 " lines with the parent commit, Default 20, 
-" according to git annotate docs 
+" according to git annotate docs.
 
 function! IngestGitAnnotate() abort
   let l:annotatedlines = systemlist('git annotate --line-porcelain -M ' . @%)
@@ -143,7 +150,7 @@ function! FormatChanges() abort
 endfunction
 
 augroup CPP
-autocmd BufWritePost *.h call FormatChanges() | :e 
+autocmd BufWritePost cpp call FormatChanges() | :e 
 autocmd BufWritePost *.c call FormatChanges() | :e 
 autocmd BufWritePost *.cxx call FormatChanges() | :e 
 autocmd BufWritePost *.hpp call FormatChanges() | :e 
