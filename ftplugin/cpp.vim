@@ -126,31 +126,31 @@ function! CreateRanges(cleanedlines) abort
 endfunction
 
 function! MakeArguments(ranges) abort
-  let g:args = ''
+  let b:args = ''
   for l:range in a:ranges 
-    let g:args .= printf(' --lines=%d:%d', l:range[0], l:range[1])
+    let b:args .= printf(' --lines=%d:%d', l:range[0], l:range[1])
   endfor
   " style options are currently left to the user to handle
-  let g:filename = expand('%')
-  let g:args .= printf(' -i %s', g:filename) 
-  return g:args
+  let b:filename = expand('%')
+  let b:args .= printf(' -i %s', b:filename) 
+  return b:args
 endfunction
 
 function! FormatChanges() abort
-  let g:annotatedlines = IngestGitAnnotate()
-  let g:notcommittedlines = CollectUncommittedLines(g:annotatedlines)
+  let b:annotatedlines = IngestGitAnnotate()
+  let b:notcommittedlines = CollectUncommittedLines(b:annotatedlines)
   " if no ranges, stop.
-  if g:notcommittedlines == []
+  if b:notcommittedlines == []
     return
   endif
-  let g:cleanedlines = CleanLines(g:notcommittedlines)
-  let g:ranges = CreateRanges(g:cleanedlines)
-  let g:arguments = MakeArguments(g:ranges)
-  call system('clang-format' . g:arguments) 
+  let b:cleanedlines = CleanLines(b:notcommittedlines)
+  let b:ranges = CreateRanges(b:cleanedlines)
+  let b:arguments = MakeArguments(b:ranges)
+  call system('clang-format' . b:arguments) 
 endfunction
 
 augroup CPP
-autocmd BufWritePost cpp call FormatChanges() | :e 
+autocmd BufWritePost *.h call FormatChanges() | :e 
 autocmd BufWritePost *.c call FormatChanges() | :e 
 autocmd BufWritePost *.cxx call FormatChanges() | :e 
 autocmd BufWritePost *.hpp call FormatChanges() | :e 

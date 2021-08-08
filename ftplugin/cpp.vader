@@ -1,4 +1,5 @@
 "  test file for /ftplugin/cpp.vim
+"  must be run in same directory
 "  can simply run :Vader here or :Vader <filename> maybe useful
 
 Before:
