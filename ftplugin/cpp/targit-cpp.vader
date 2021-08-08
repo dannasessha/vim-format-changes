@@ -7,7 +7,7 @@ Before:
   unlet! g:vader_exception g:vader_throwpoint
 
 Execute(source vimscript file):
-  let sourcefile = 'cpp.vim'
+  let sourcefile = 'targit-cpp.vim'
   if !filereadable(sourcefile)
     echoerr 'Something went wrong. File does not exist: '. sourcefile
   endif
