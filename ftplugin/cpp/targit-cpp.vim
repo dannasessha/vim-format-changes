@@ -137,6 +137,11 @@ function! MakeArguments(ranges) abort
 endfunction
 
 function! FormatChanges() abort
+  if !exists('g:jobnumber')
+    let g:jobnumber = 1
+  else
+    let g:jobnumber = (g:jobnumber + 1)
+  endif
   let b:annotatedlines = IngestGitAnnotate()
   let b:notcommittedlines = CollectUncommittedLines(b:annotatedlines)
   " if no ranges, stop.
@@ -144,17 +149,20 @@ function! FormatChanges() abort
     return
   endif
   let b:cleanedlines = CleanLines(b:notcommittedlines)
-  let b:ranges = CreateRanges(b:cleanedlines)
-  let b:arguments = MakeArguments(b:ranges)
-  call system('clang-format' . b:arguments) 
+  let g:ranges = CreateRanges(b:cleanedlines)
+  let g:arguments = MakeArguments(g:ranges)
+  call system('clang-format' . g:arguments) 
+  " need to add jobstart() etc
+  " to confirm that this has completed,
+  " then 're-draw' the buffer, THEN endfunction
 endfunction
 
 augroup CPP
-autocmd BufWritePost *.h call FormatChanges() | :e 
-autocmd BufWritePost *.c call FormatChanges() | :e 
-autocmd BufWritePost *.cxx call FormatChanges() | :e 
-autocmd BufWritePost *.hpp call FormatChanges() | :e 
-autocmd BufWritePost *.cpp call FormatChanges() | :e | augroup END
+autocmd BufWritePost *.h call FormatChanges() 
+autocmd BufWritePost *.c call FormatChanges()
+autocmd BufWritePost *.cxx call FormatChanges()
+autocmd BufWritePost *.hpp call FormatChanges()
+autocmd BufWritePost *.cpp call FormatChanges() | augroup END
 
 " TODO: 
 " finish tests
