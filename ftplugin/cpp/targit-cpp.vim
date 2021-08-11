@@ -1,7 +1,8 @@
-" this filename should match the buffer's filetype selected in ftdetect
+" the directory of this vim file should match the
+" buffer's filetype selected in ftdetect...
 " currently only designed for linux + bash + C++ 
 "
-" relies on accurate, normative file extensions! 
+" the plugin relies on accurate, normative file extensions! 
 " this plugin sets the 'filetype' options to cpp (C++) for 
 " *.cpp , *.c, *.cxx, *.h and *.hpp on buffer read (BufRead)
 " or creating a new file matching those extensions (BufNewFile).
@@ -11,7 +12,13 @@
 "
 " this plugin does not provide protections from files which 
 " have mismatched languages and extensions.
-
+"
+" the plugin uses `job-id`s to handle calls to the command line.
+" `job-id`s share "key space" with `channel-id`s which can be used
+" to handle io tasks. Therefore it is not advised to use this plugin 
+" in combination with a vim session that uses other `channel-id`s,
+" as unexpected behavior may result.
+"
 " Dependency: 
 " git in PATH
 " clang-format in PATH
@@ -137,11 +144,6 @@ function! MakeArguments(ranges) abort
 endfunction
 
 function! FormatChanges() abort
-  if !exists('g:jobnumber')
-    let g:jobnumber = 1
-  else
-    let g:jobnumber = (g:jobnumber + 1)
-  endif
   let b:annotatedlines = IngestGitAnnotate()
   let b:notcommittedlines = CollectUncommittedLines(b:annotatedlines)
   " if no ranges, stop.
@@ -151,10 +153,34 @@ function! FormatChanges() abort
   let b:cleanedlines = CleanLines(b:notcommittedlines)
   let g:ranges = CreateRanges(b:cleanedlines)
   let g:arguments = MakeArguments(g:ranges)
-  call system('clang-format' . g:arguments) 
+  " create jobnumber for `job-id` (`channel-id`)
+  "if !exists('g:jobnumber')
+  "  let g:jobnumber = 888 
+  "else
+  "  let g:jobnumber = (g:jobnumber + 1)
+  "endif
+  function! s:Event(job_id, data, event) dict
+    if a:event == 'stdout'
+      echoerr 'error: callback to stdout'
+    elseif a:event == 'stderr'
+      echoerr 'error: callback to error'
+    elseif a:event == 'exit'
+      let g:str = 'good evening and good night'
+    else
+      echoerr 'shouldnt be possible'
+    endif
+    let g:attach = 'and end'
+  endfunction
+  let s:callbacks = {
+        \    'on_exit': function('s:Event') } 
+        " \    'on_stderr': function('s:Event'), 
+        " \    'on_stdout': function('s:Event'), 
+  call jobstart(('clang-format' . g:arguments), s:callbacks)
   " need to add jobstart() etc
   " to confirm that this has completed,
   " then 're-draw' the buffer, THEN endfunction
+  "call system('clang-format' . g:arguments) 
+  "  Use -style=file to load style configuration from .clang-format file
 endfunction
 
 augroup CPP
