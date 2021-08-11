@@ -153,33 +153,16 @@ function! FormatChanges() abort
   let b:cleanedlines = CleanLines(b:notcommittedlines)
   let g:ranges = CreateRanges(b:cleanedlines)
   let g:arguments = MakeArguments(g:ranges)
-  " create jobnumber for `job-id` (`channel-id`)
-  "if !exists('g:jobnumber')
-  "  let g:jobnumber = 888 
-  "else
-  "  let g:jobnumber = (g:jobnumber + 1)
-  "endif
   function! s:Event(job_id, data, event) dict
-    if a:event == 'stdout'
-      echoerr 'error: callback to stdout'
-    elseif a:event == 'stderr'
-      echoerr 'error: callback to error'
-    elseif a:event == 'exit'
+    if a:event == 'exit'
       let g:str = 'good evening and good night'
+      :e
     else
-      echoerr 'shouldnt be possible'
+      echoerr 'error! condition other than exit'
     endif
-    let g:attach = 'and end'
   endfunction
-  let s:callbacks = {
-        \    'on_exit': function('s:Event') } 
-        " \    'on_stderr': function('s:Event'), 
-        " \    'on_stdout': function('s:Event'), 
+  let s:callbacks = { 'on_exit': function('s:Event') } 
   call jobstart(('clang-format' . g:arguments), s:callbacks)
-  " need to add jobstart() etc
-  " to confirm that this has completed,
-  " then 're-draw' the buffer, THEN endfunction
-  "call system('clang-format' . g:arguments) 
   "  Use -style=file to load style configuration from .clang-format file
 endfunction
 
