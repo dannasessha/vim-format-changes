@@ -133,7 +133,9 @@ function! CreateRanges(cleanedlines) abort
 endfunction
 
 function! MakeArguments(ranges) abort
-  let b:args = ''
+  "let b:args = '' 
+  "let b:args = ' --style=file'
+  let b:args = ' --style=file --sort-includes=false'
   for l:range in a:ranges 
     let b:args .= printf(' --lines=%d:%d', l:range[0], l:range[1])
   endfor
@@ -156,7 +158,10 @@ function! FormatChanges() abort
   function! s:Event(job_id, data, event) dict
     if a:event == 'exit'
       let g:str = 'good evening and good night'
-      :e
+      "suspicion: it is running more than once.
+      "the next line is the culprit (again.) 
+      "Does this command need a handler, or to be swapped out?
+      :e!
     else
       echoerr 'error! condition other than exit'
     endif
