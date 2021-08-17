@@ -13,8 +13,8 @@ Before:
   unlet! g:vader_exception g:vader_throwpoint
   "  check that all lines in files /test/*
   "  are committed.
-  AssertEqual [], CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/init.cpp'))
-  AssertEqual [], CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/init.h'))
+  AssertEqual [], CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
+  AssertEqual [], CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.h'))
 
 Execute(tautology):
   let input = ""
@@ -295,17 +295,25 @@ Execute(CreateRanges throws an error with a false boolean argument type):
 Execute(CreateRanges throws an error with a null argument type):
   AssertThrows CreateRanges(v:null)
 
-"Execute(CreateRanges: Basic range, two lines):
-  "let input = [1, 2]
-  "let expected = [[1, 1]]
-  "AssertThrows
-  "AssertEqual expected, input
+After:
+  call system('git reset --hard HEAD ../../test/files/init.cpp')
+
+Execute(change /test/ file):
+  call system('echo . > ../../test/files/init.cpp')
+  "  to see if before+after is working
+  
+"  bash is okay, but  
+"  ideally, load file into buffer, manipulate, run save
 
 "Execute(CleanedLines returns a list):
 "  let input = CleanedLines([])
 "  let expected = []
 "  AssertEqual expected, input
 
+  "let input = [1, 2]
+  "let expected = [[1, 1]]
+  "AssertThrows
+  "AssertEqual expected, input
 "  testing could be expanded into a collection of possible states for file changes
 
 "  TODO : tests for external files, starting with empty file 
