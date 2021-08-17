@@ -1,17 +1,20 @@
 "  test file for /ftplugin/cpp.vim
 "  must be run in same directory
 "  can simply run :Vader here or :Vader <filename> maybe useful
-
-Before:
-  unlet! input expected
-  unlet! g:vader_exception g:vader_throwpoint
-
 Execute(source vimscript file):
   let sourcefile = 'targit-cpp.vim'
   if !filereadable(sourcefile)
     echoerr 'Something went wrong. File does not exist: '. sourcefile
   endif
   execute 'source' sourcefile
+
+Before:
+  unlet! input expected
+  unlet! g:vader_exception g:vader_throwpoint
+  "  check that all lines in files /test/*
+  "  are committed.
+  AssertEqual [], CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/init.cpp'))
+  AssertEqual [], CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/init.h'))
 
 Execute(tautology):
   let input = ""
