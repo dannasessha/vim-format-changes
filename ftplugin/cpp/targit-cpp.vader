@@ -13,8 +13,13 @@ Before:
   unlet! g:vader_exception g:vader_throwpoint
   "  check that all lines in files /test/*
   "  are committed.
-  AssertEqual [], CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
-  AssertEqual [], CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.h'))
+  let expect1 = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
+  let expect2 = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.h'))
+  AssertEqual [], expect1 
+  AssertEqual [], expect2 
+
+After:
+  call system('git checkout HEAD ../../test/files/init.cpp')
 
 Execute(tautology):
   let input = ""
@@ -295,10 +300,10 @@ Execute(CreateRanges throws an error with a false boolean argument type):
 Execute(CreateRanges throws an error with a null argument type):
   AssertThrows CreateRanges(v:null)
 
-After:
-  call system('git reset --hard HEAD ../../test/files/init.cpp')
-
 Execute(change /test/ file):
+  call system('echo . > ../../test/files/init.cpp')
+
+Execute(change /test/ file part 2):
   call system('echo . > ../../test/files/init.cpp')
   "  to see if before+after is working
   
