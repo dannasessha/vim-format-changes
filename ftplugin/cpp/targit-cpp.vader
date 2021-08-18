@@ -20,6 +20,7 @@ Before:
 
 After:
   call system('git checkout HEAD ../../test/files/init.cpp')
+  call system('git checkout HEAD ../../test/files/init.h')
 
 Execute(tautology):
   let input = ""
