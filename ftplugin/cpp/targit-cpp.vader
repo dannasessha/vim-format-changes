@@ -15,12 +15,15 @@ Before:
   "  are committed.
   let expect1 = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
   let expect2 = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.h'))
+  let expect3 = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/emptyfile'))
   AssertEqual [], expect1 
   AssertEqual [], expect2 
+  AssertEqual [], expect3 
 
 After:
   call system('git checkout HEAD ../../test/files/init.cpp')
   call system('git checkout HEAD ../../test/files/init.h')
+  call system('git checkout HEAD ../../test/files/emptyfile')
 
 Execute(tautology):
   let input = ""
@@ -319,6 +322,12 @@ Execute(change /test/ file by shell concatination, last line of .h):
   call system('echo . >> ../../test/files/init.h')
   let expected = ['0000000000000000000000000000000000000000 43 43 1']
   let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.h'))
+  AssertEqual expected, result
+
+Execute(change /test/ file by shell concatination, last line of .cpp):
+  call system('echo . > ../../test/files/emptyfile') 
+  let expected = ['0000000000000000000000000000000000000000 1 1 1']
+  let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/emptyfile'))
   AssertEqual expected, result
 
 "  bash is okay, but ideally, manipulate and save from nvim.
