@@ -312,6 +312,16 @@ Execute(change /test/ file by replacing whole file part 1):
 Execute(change /test/ file by replacing whole file part 2):
   AssertEqual 0, 0
   
+Execute(unchanged .cpp file has no detected Uncommitted Lines):
+  let expected = []
+  let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
+  AssertEqual expected, result
+
+Execute(unchanged .h file has no detected Uncommitted Lines):
+  let expected = []
+  let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.h'))
+  AssertEqual expected, result
+
 Execute(change /test/ file by shell concatination, last line of .cpp):
   call system('echo . >> ../../test/files/init.cpp') 
   let expected = ['0000000000000000000000000000000000000000 1808 1808 1']
@@ -359,12 +369,10 @@ Execute(cli call to nvim, with minimal config file, to modify 1 line in middle {
   AssertEqual expected, result
 
 "  testing could be expanded into a collection of possible states for file changes
+"  tests could be split between vim logic tests and external file tests
 
-"  TODO : tests for external files, starting with empty file 
+"  TODO : investigate 
 "  vader_exception and vader_throwpoint
 "  (unit integration)
-"  then:
-"  full file, no modifications
-"  completely deleted file
-"  various extensions
+"  ... various extensions
 "  .. non C++ file with C++ extension
