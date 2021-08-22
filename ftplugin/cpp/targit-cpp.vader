@@ -11,14 +11,24 @@ Execute(source vimscript file):
 Before:
   unlet! input expected result
   unlet! g:vader_exception g:vader_throwpoint
+  "  files are unchaged at the beginning of tests.
+  "  run both git annotate and git diff to check.
+
   "  check that all lines in files /test/*
-  "  are committed.
+  "  are committed, with the same logic as looking for ranges to format.
   let result1 = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
   let result2 = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.h'))
   let result3 = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/emptyfile'))
   AssertEqual [], result1 
   AssertEqual [], result2 
   AssertEqual [], result3 
+  "git diff should have no output.
+  let result4 = system('git diff ' . '../../test/files/init.cpp')  
+  let result5 = system('git diff ' . '../../test/files/init.h')  
+  let result6 = system('git diff ' . '../../test/files/emptyfile')  
+  AssertEqual "", result4
+  AssertEqual "", result5
+  AssertEqual "", result6
 
 After:
   call system('git checkout HEAD ../../test/files/init.cpp')
@@ -344,30 +354,53 @@ Execute(change /test/ file by shell concatination, last line of .cpp):
 
 "  the following set of tests show these cli-commands-to-nvim 
 "  only modify the lines dictated, and then the file is saved
-Execute(cli call to nvim, with minimal config file, to modify first line):
+Execute(cli call to nvim, with --clean and minimal config file, to modify first line):
+  call system('nvim --clean -u ../../test/config/init-plugintest-minimal.vim -c "1 s/^/somethingnew" -c ":w" ../../test/files/init.cpp') 
+  let expected = ['0000000000000000000000000000000000000000 1 1 1']
+  let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
+  AssertEqual expected, result
+
+Execute(cli call to nvim, with --clean and minimal config file, to modify 1 line in middle {2 digit line number}):
+  call system('nvim --clean -u ../../test/config/init-plugintest-minimal.vim -c "61 s/^/somethingnew" -c ":w" ../../test/files/init.cpp') 
+  let expected = ['0000000000000000000000000000000000000000 61 61 1']
+  let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
+  AssertEqual expected, result
+
+Execute(cli call to nvim, with --clean and minimal config file, to modify 1 line in middle {3 digit line number}):
+  call system('nvim --clean -u ../../test/config/init-plugintest-minimal.vim -c "316 s/^/somethingnew" -c ":w" ../../test/files/init.cpp') 
+  let expected = ['0000000000000000000000000000000000000000 316 316 1']
+  let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
+  AssertEqual expected, result
+
+Execute(cli call to nvim, with --clean and minimal config file, to modify 1 line in middle {4 digit line number}):
+  call system('nvim --clean -u ../../test/config/init-plugintest-minimal.vim -c "1156 s/^/somethingnew" -c ":w" ../../test/files/init.cpp') 
+  let expected = ['0000000000000000000000000000000000000000 1156 1156 1']
+  let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
+  AssertEqual expected, result
+
+Execute(cli call to nvim, minimal config file, to modify first line):
   call system('nvim -u ../../test/config/init-plugintest-minimal.vim -c "1 s/^/somethingnew" -c ":w" ../../test/files/init.cpp') 
   let expected = ['0000000000000000000000000000000000000000 1 1 1']
   let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
   AssertEqual expected, result
 
-Execute(cli call to nvim, with minimal config file, to modify 1 line in middle {2 digit line number}):
+Execute(cli call to nvim, minimal config file, to modify 1 line in middle {2 digit line number}):
   call system('nvim -u ../../test/config/init-plugintest-minimal.vim -c "61 s/^/somethingnew" -c ":w" ../../test/files/init.cpp') 
   let expected = ['0000000000000000000000000000000000000000 61 61 1']
   let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
   AssertEqual expected, result
 
-Execute(cli call to nvim, with minimal config file, to modify 1 line in middle {3 digit line number}):
+Execute(cli call to nvim, minimal config file, to modify 1 line in middle {3 digit line number}):
   call system('nvim -u ../../test/config/init-plugintest-minimal.vim -c "316 s/^/somethingnew" -c ":w" ../../test/files/init.cpp') 
   let expected = ['0000000000000000000000000000000000000000 316 316 1']
   let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
   AssertEqual expected, result
 
-Execute(cli call to nvim, with minimal config file, to modify 1 line in middle {4 digit line number}):
+Execute(cli call to nvim, minimal config file, to modify 1 line in middle {4 digit line number}):
   call system('nvim -u ../../test/config/init-plugintest-minimal.vim -c "1156 s/^/somethingnew" -c ":w" ../../test/files/init.cpp') 
   let expected = ['0000000000000000000000000000000000000000 1156 1156 1']
   let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
   AssertEqual expected, result
-
 "  testing could be expanded into a collection of possible states for file changes
 "  tests could be split between vim logic tests and external file tests
 
