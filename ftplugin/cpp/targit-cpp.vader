@@ -401,6 +401,23 @@ Execute(cli call to nvim, minimal config file, to modify 1 line in middle {4 dig
   let expected = ['0000000000000000000000000000000000000000 1156 1156 1']
   let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
   AssertEqual expected, result
+
+"  sourcing plugin in following test
+Execute(cli call to nvim, config file sourcing plugin, to modify first line):
+  call system('nvim -u ../../test/config/init-plugintest.vim -c "1 s/^/somethingnew" -c ":w" ../../test/files/init.cpp') 
+  let expected = ['0000000000000000000000000000000000000000 1 1 1']
+  let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
+  AssertEqual expected, result
+
+Execute(cli call to nvim, config file sourcing plugin, to modify first line and then format new line):
+  call system('nvim -u ~/backport-clang/test/config/init-plugintest.vim -c "1 s/^/                  \/\/new " -c ":w" -c ":w" ../../test/files/init.cpp') 
+  let expected = ['0000000000000000000000000000000000000000 1 1 1']
+  let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
+  AssertEqual expected, result
+  let diffexpected = ''
+  let diffoutput = system('git diff ' . '../../test/files/init.cpp')  
+  AssertEqual diffexpected, diffoutput
+
 "  testing could be expanded into a collection of possible states for file changes
 "  tests could be split between vim logic tests and external file tests
 
