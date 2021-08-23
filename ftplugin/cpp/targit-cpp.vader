@@ -414,8 +414,8 @@ Execute(cli call to nvim, config file sourcing plugin, to modify first line and 
   let expected = ['0000000000000000000000000000000000000000 1 1 1']
   let result = CollectUncommittedLines(systemlist('git annotate --line-porcelain -M ' . '../../test/files/init.cpp'))
   AssertEqual expected, result
-  let diffexpected = ''
-  let diffoutput = system('git diff ' . '../../test/files/init.cpp')  
+  let diffoutput = system('git diff ' . '../../test/files/init.cpp')
+  let diffexpected = "diff --git a/test/files/init.cpp b/test/files/init.cpp\n" . "index 6f6a5ca..68bb54a 100644\n" . "--- a/test/files/init.cpp\n" . "+++ b/test/files/init.cpp\n" . "@@ -1,4 +1,4 @@\n" . "-// Copyright (c) 2009-2010 Satoshi Nakamoto\n" . "+// new // Copyright (c) 2009-2010 Satoshi Nakamoto\n" . " // Copyright (c) 2009-2014 The Bitcoin Core developers\n" . " // Distributed under the MIT software license, see the accompanying\n" . " // file COPYING or https://www.opensource.org/licenses/mit-license.php .\n"
   AssertEqual diffexpected, diffoutput
 
 "  testing could be expanded into a collection of possible states for file changes
