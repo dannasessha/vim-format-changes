@@ -25,6 +25,13 @@
 " ...(and for testing): 
 " Plug 'https://github.com/junegunn/vader.vim'
 
+function! FindTotalLines() abort
+  let l:filesummary = execute('file')
+  let l:startnumberindex = match(l:filesummary, '\v\d{1,10}\s{1}lines=\s{1}--')
+  let l:endnumberindex = matchend(l:filesummary, '\v".+"\s\d{1,10}')
+  return str2nr(strpart(l:filesummary, str2nr(l:startnumberindex), (str2nr(l:endnumberindex) - str2nr(l:startnumberindex))))
+endfunction
+
 " produce a list populated by a complete line-by-line output 
 " of who authored which line in the file open in the current buffer.
 " The -M option can be customized (like -M[<num>]) 
@@ -33,15 +40,6 @@
 " moving/copying within a file for it to associate those
 " lines with the parent commit, Default 20, 
 " according to git annotate docs.
-function! FindTotalLines() abort
-  let l:filesummary = execute('file')
-  let l:startnumberindex = match(l:filesummary, '\v\d{1,10}\s{1}lines=\s{1}--')
-  let l:endnumberindex = matchend(l:filesummary, '\v".+"\s\d{1,10}')
-  return str2nr(strpart(l:filesummary, str2nr(l:startnumberindex), (str2nr(l:endnumberindex) - str2nr(l:startnumberindex))))
-  "return l:endnumberindex
-  " 2147483647
-endfunction
-
 function! IngestGitAnnotate() abort
   let l:annotatedlines = systemlist('git annotate --line-porcelain -M ' . @%)
   return l:annotatedlines
@@ -56,6 +54,18 @@ function! CollectUncommittedLines(annotatedlines) abort
     endif
   endfor
   return l:uncommittedlines
+endfunction
+
+function! CollectCommittedLines(annotatedlines) abort
+  let l:committedlines = []
+  " collect committed lines and their content
+  for l:line in a:annotatedlines
+    if match(l:line, '0000000000000000000000000000000000000000 ') != 0 && match(l:line, '\v\x{40}\s\d\s\d') == 0
+      call add(l:committedlines, l:line) 
+      " make 'enabling bit' to look for content, to be reset after found.
+    endif
+  endfor
+  return l:committedlines
 endfunction
 
 "  process output (clean) to only retain line numbers
@@ -156,12 +166,15 @@ endfunction
 function! FormatChanges() abort
   let g:totallines = FindTotalLines()
   let b:annotatedlines = IngestGitAnnotate()
-  let b:notcommittedlines = CollectUncommittedLines(b:annotatedlines)
+  let b:notcommittedlines = CollectUncommittedLines(deepcopy(b:annotatedlines))
   " if no ranges, stop.
   if b:notcommittedlines == []
     return
   endif
+  "cleanedlines is _uncommitted_ cleanedlines
+  "TODO rename
   let b:cleanedlines = CleanLines(b:notcommittedlines)
+  let g:committedlines = CollectCommittedLines(deepcopy(b:annotatedlines))
   let g:ranges = CreateRanges(b:cleanedlines)
   let g:arguments = MakeArguments(g:ranges)
   function! s:Event(job_id, data, event) dict
