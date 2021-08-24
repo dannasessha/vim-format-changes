@@ -33,6 +33,14 @@
 " moving/copying within a file for it to associate those
 " lines with the parent commit, Default 20, 
 " according to git annotate docs.
+function! FindTotalLines() abort
+  let l:filesummary = execute('file')
+  let l:startnumberindex = match(l:filesummary, '\v\d{1,10}\s{1}lines=\s{1}--')
+  let l:endnumberindex = matchend(l:filesummary, '\v".+"\s\d{1,10}')
+  return str2nr(strpart(l:filesummary, str2nr(l:startnumberindex), (str2nr(l:endnumberindex) - str2nr(l:startnumberindex))))
+  "return l:endnumberindex
+  " 2147483647
+endfunction
 
 function! IngestGitAnnotate() abort
   let l:annotatedlines = systemlist('git annotate --line-porcelain -M ' . @%)
@@ -146,6 +154,7 @@ function! MakeArguments(ranges) abort
 endfunction
 
 function! FormatChanges() abort
+  let g:totallines = FindTotalLines()
   let b:annotatedlines = IngestGitAnnotate()
   let b:notcommittedlines = CollectUncommittedLines(b:annotatedlines)
   " if no ranges, stop.
