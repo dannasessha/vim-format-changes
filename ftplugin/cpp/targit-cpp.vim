@@ -58,11 +58,26 @@ endfunction
 
 function! CollectCommittedLines(annotatedlines) abort
   let l:committedlines = []
-  " collect committed lines and their content
+  let l:hashline = []
+  let l:detectcommitted = v:false
+  " collect committed line hashes and their content in a list (committedlines)
+  " of tuple-like lists (hashline).
   for l:line in a:annotatedlines
-    if match(l:line, '0000000000000000000000000000000000000000 ') != 0 && match(l:line, '\v\x{40}\s\d{1,10}\s\d{1,10}') == 0
-      call add(l:committedlines, l:line) 
-      " make 'enabling bit' to look for content, to be reset after found.
+    " detect content line, complete, write, and reset hashline.
+    if l:detectcommitted == v:true
+      if match(l:line, '\v\t') == 0
+      call add(l:hashline, l:line)
+      call add(l:committedlines, l:hashline)
+      let l:hashline = []
+      endif
+    endif
+    " detect a commitedline
+    if match(l:line, '\v0000000000000000000000000000000000000000\s\d{1,10}\s\d{1,10}') != 0 && match(l:line, '\v\x{40}\s\d{1,10}\s\d{1,10}') == 0
+      call add(l:hashline, l:line)
+      let l:detectcommitted = v:true
+    " detect uncommittedline to reset detection bit
+    elseif match(l:line, '\v0000000000000000000000000000000000000000\s\d{1,10}\s\d{1,10}') == 0
+      let l:detectcommitted = v:false
     endif
   endfor
   return l:committedlines
@@ -102,7 +117,7 @@ function! CleanLines(uncommittedlines) abort
   endfor
   return l:clean
 endfunction
-:
+
 function! CreateRanges(cleanedlines) abort
   let l:range = []
   let l:temp = []
@@ -185,24 +200,24 @@ function! FormatChanges() abort
       "the next line is the culprit (again.) 
       "Does this command need a handler, or to be swapped out?
       :e!
+      call s:CheckUncommitted()
     else
       echoerr 'error! condition other than exit'
     endif
   endfunction
   let s:callbacks = { 'on_exit': function('s:Event') } 
   call jobstart(('clang-format' . g:arguments), s:callbacks)
+
   function! s:CheckUncommitted() abort
-    "TODO weak assertion: if line numbers changed this is not a hit,
     "make tuple-like lists to check
     let g:checkannotatedlines = IngestGitAnnotate()
     let g:checkcommittedlines = CollectCommittedLines(deepcopy(g:checkannotatedlines))
     if g:checkcommittedlines != g:committedlines
-      echoerr 'ERROR!!! committedlines changed (weak assert)' 
+      echoerr 'ERROR!!! committedlines changed (strong assert)' . string(g:checkcommittedlines) . ' != ' . string(g:committedlines)
     else
       let g:endmessage = 'success with check'
     endif
   endfunction
-  call s:CheckUncommitted()
 endfunction
 
 augroup CPP
