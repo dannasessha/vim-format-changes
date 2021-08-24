@@ -60,7 +60,7 @@ function! CollectCommittedLines(annotatedlines) abort
   let l:committedlines = []
   " collect committed lines and their content
   for l:line in a:annotatedlines
-    if match(l:line, '0000000000000000000000000000000000000000 ') != 0 && match(l:line, '\v\x{40}\s\d\s\d') == 0
+    if match(l:line, '0000000000000000000000000000000000000000 ') != 0 && match(l:line, '\v\x{40}\s\d{1,10}\s\d{1,10}') == 0
       call add(l:committedlines, l:line) 
       " make 'enabling bit' to look for content, to be reset after found.
     endif
@@ -165,8 +165,8 @@ endfunction
 
 function! FormatChanges() abort
   let g:totallines = FindTotalLines()
-  let b:annotatedlines = IngestGitAnnotate()
-  let b:notcommittedlines = CollectUncommittedLines(deepcopy(b:annotatedlines))
+  let g:annotatedlines = IngestGitAnnotate()
+  let b:notcommittedlines = CollectUncommittedLines(deepcopy(g:annotatedlines))
   " if no ranges, stop.
   if b:notcommittedlines == []
     return
@@ -174,7 +174,7 @@ function! FormatChanges() abort
   "cleanedlines is _uncommitted_ cleanedlines
   "TODO rename
   let b:cleanedlines = CleanLines(b:notcommittedlines)
-  let g:committedlines = CollectCommittedLines(deepcopy(b:annotatedlines))
+  let g:committedlines = CollectCommittedLines(deepcopy(g:annotatedlines))
   let g:ranges = CreateRanges(b:cleanedlines)
   let g:arguments = MakeArguments(g:ranges)
   function! s:Event(job_id, data, event) dict
