@@ -151,8 +151,6 @@ function! CreateRanges(cleanedlines) abort
 endfunction
 
 function! MakeArguments(ranges) abort
-  "let b:args = '' 
-  "let b:args = ' --style=file'
   let b:args = ' --style=file --sort-includes=false'
   for l:range in a:ranges 
     let b:args .= printf(' --lines=%d:%d', l:range[0], l:range[1])
@@ -171,8 +169,8 @@ function! FormatChanges() abort
   if b:notcommittedlines == []
     return
   endif
-  "cleanedlines is _uncommitted_ cleanedlines
-  "TODO rename
+  " cleanedlines is _uncommitted_ cleanedlines
+  " TODO rename
   let b:cleanedlines = CleanLines(b:notcommittedlines)
   let g:committedlines = CollectCommittedLines(deepcopy(g:annotatedlines))
   if g:totallines != (len(g:committedlines) + len(b:notcommittedlines))
@@ -193,7 +191,18 @@ function! FormatChanges() abort
   endfunction
   let s:callbacks = { 'on_exit': function('s:Event') } 
   call jobstart(('clang-format' . g:arguments), s:callbacks)
-  "  Use -style=file to load style configuration from .clang-format file
+  function! s:CheckUncommitted() abort
+    "TODO weak assertion: if line numbers changed this is not a hit,
+    "make tuple-like lists to check
+    let g:checkannotatedlines = IngestGitAnnotate()
+    let g:checkcommittedlines = CollectCommittedLines(deepcopy(g:checkannotatedlines))
+    if g:checkcommittedlines != g:committedlines
+      echoerr 'ERROR!!! committedlines changed (weak assert)' 
+    else
+      let g:endmessage = 'success with check'
+    endif
+  endfunction
+  call s:CheckUncommitted()
 endfunction
 
 augroup CPP
