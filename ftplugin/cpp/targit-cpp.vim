@@ -175,6 +175,9 @@ function! FormatChanges() abort
   "TODO rename
   let b:cleanedlines = CleanLines(b:notcommittedlines)
   let g:committedlines = CollectCommittedLines(deepcopy(g:annotatedlines))
+  if g:totallines != (len(g:committedlines) + len(b:notcommittedlines))
+    echoerr 'error! committedlines + notcommittedlines should equal totallines' 
+  endif
   let g:ranges = CreateRanges(b:cleanedlines)
   let g:arguments = MakeArguments(g:ranges)
   function! s:Event(job_id, data, event) dict
