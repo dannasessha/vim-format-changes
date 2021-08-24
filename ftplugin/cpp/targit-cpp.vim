@@ -49,7 +49,7 @@ function! CollectUncommittedLines(annotatedlines) abort
   let l:uncommittedlines = []
   " collect uncommittedlines lines
   for l:line in a:annotatedlines
-    if match(l:line, '0000000000000000000000000000000000000000 ') == 0
+    if match(l:line, '\v0000000000000000000000000000000000000000\s\d{1,10}\s\d{1,10}') == 0
       call add(l:uncommittedlines, l:line) 
     endif
   endfor
