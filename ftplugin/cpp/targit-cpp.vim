@@ -19,7 +19,7 @@
 " in combination with a vim session that uses other `channel-id`s,
 " as unexpected behavior may result.
 "
-" Dependency: 
+" Dependencies: 
 " git in PATH
 " clang-format in PATH
 " ...(and for testing): 
@@ -60,8 +60,8 @@ function! CollectCommittedLines(annotatedlines) abort
   let l:committedlines = []
   let l:hashline = []
   let l:detectcommitted = v:false
-  " collect committed line hashes and their content in a list (committedlines)
-  " of tuple-like lists (hashline).
+  " collect committed line hashes and their content
+  " in a list (committedlines) of tuple-like lists (hashline).
   for l:line in a:annotatedlines
     " detect content line, complete, write, and reset hashline.
     if l:detectcommitted == v:true
@@ -73,7 +73,11 @@ function! CollectCommittedLines(annotatedlines) abort
     endif
     " detect a commitedline
     if match(l:line, '\v0000000000000000000000000000000000000000\s\d{1,10}\s\d{1,10}') != 0 && match(l:line, '\v\x{40}\s\d{1,10}\s\d{1,10}') == 0
-      call add(l:hashline, l:line)
+      " trimmedline is used so that later check allows lines 
+      " even if they have a differing second or optional third number
+      " as output from git annotate
+      let l:trimmedline = matchstr(l:line, '\v\x{40}\s\d{1,10}')
+      call add(l:hashline, l:trimmedline)
       let l:detectcommitted = v:true
     " detect uncommittedline to reset detection bit
     elseif match(l:line, '\v0000000000000000000000000000000000000000\s\d{1,10}\s\d{1,10}') == 0
@@ -106,7 +110,7 @@ function! CleanLines(uncommittedlines) abort
   endfor
   " clean is now a list of uncommitted line numbers
 
-  " defensive check in case cleanedlines is in wrong order 
+  " defensive check for cleanedlines in wrong order 
   " aka invalid input
   let l:lastline = 0
   for l:line in l:clean
@@ -184,27 +188,24 @@ function! FormatChanges() abort
   if b:notcommittedlines == []
     return
   endif
-  " cleanedlines is _uncommitted_ cleanedlines
-  " TODO rename
-  let b:cleanedlines = CleanLines(b:notcommittedlines)
+  let b:cleanednotcommittedlines = CleanLines(b:notcommittedlines)
   let g:committedlines = CollectCommittedLines(deepcopy(g:annotatedlines))
   if g:totallines != (len(g:committedlines) + len(b:notcommittedlines))
     echoerr 'error! committedlines + notcommittedlines should equal totallines' 
   endif
-  let g:ranges = CreateRanges(b:cleanedlines)
+  let g:ranges = CreateRanges(b:cleanednotcommittedlines)
   let g:arguments = MakeArguments(g:ranges)
+  
   function! s:Event(job_id, data, event) dict
     if a:event == 'exit'
-      let g:str = 'good evening and good night'
-      "suspicion: it is running more than once.
-      "the next line is the culprit (again.) 
-      "Does this command need a handler, or to be swapped out?
-      :e!
+      edit!
+      noautocmd write
       call s:CheckUncommitted()
     else
       echoerr 'error! condition other than exit'
     endif
   endfunction
+
   let s:callbacks = { 'on_exit': function('s:Event') } 
   call jobstart(('clang-format' . g:arguments), s:callbacks)
 
@@ -212,11 +213,12 @@ function! FormatChanges() abort
     "make tuple-like lists to check
     let g:checkannotatedlines = IngestGitAnnotate()
     let g:checkcommittedlines = CollectCommittedLines(deepcopy(g:checkannotatedlines))
-    if g:checkcommittedlines != g:committedlines
-      echoerr 'ERROR!!! committedlines changed (strong assert)' . string(g:checkcommittedlines) . ' != ' . string(g:committedlines)
-    else
-      let g:endmessage = 'success with check'
-    endif
+    "check for all committedlines in checkcommittedlines. 
+    for g:linetuple in deepcopy(g:committedlines)
+      if count(g:checkcommittedlines, g:linetuple) != 1
+        echoerr 'ERROR!!! committedlines changed (strong assert)' . string(g:linetuple) . ' is not in ' . string(g:checkcommittedlines)
+      endif
+    endfor
   endfunction
 endfunction
 
@@ -228,8 +230,7 @@ autocmd BufWritePost *.hpp call FormatChanges()
 autocmd BufWritePost *.cpp call FormatChanges() | augroup END
 
 " TODO: 
-" finish tests
-" move code to more noramtive dirs
+" continue to make tests
 " add functionality for python
 " add support for other clang-format targets?
 " logo
