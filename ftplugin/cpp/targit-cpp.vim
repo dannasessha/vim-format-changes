@@ -1,5 +1,3 @@
-" the directory of this vim file should match the
-" buffer's filetype selected in ftdetect...
 " currently only designed for linux + bash + C++ 
 "
 " the plugin relies on accurate, normative file extensions! 
@@ -26,10 +24,8 @@
 " Plug 'https://github.com/junegunn/vader.vim'
 
 function! FindTotalLines() abort
-  let l:filesummary = execute('file')
-  let l:startnumberindex = match(l:filesummary, '\v\d{1,10}\s{1}lines=\s{1}--')
-  let l:endnumberindex = matchend(l:filesummary, '\v".+"\s\d{1,10}')
-  return str2nr(strpart(l:filesummary, str2nr(l:startnumberindex), (str2nr(l:endnumberindex) - str2nr(l:startnumberindex))))
+  let l:filesummarytail = matchstr(execute('file'), '\v\d{1,10}\s{1}lines=\s{1}\-\-\d{1,3}\%\-\-')
+  return str2nr(matchstr(l:filesummarytail, '\v\d{1,10}'))
 endfunction
 
 " produce a list populated by a complete line-by-line output 
