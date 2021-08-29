@@ -93,11 +93,13 @@ function! CleanLines(uncommittedlines) abort
     let l:endindex = matchend(l:entry, '\v0000000000000000000000000000000000000000\s\d*\s\d*')
     " coerce strings to numbers for calculating indices
     " and to record line numbers in l:clean
-    let l:linenumber = str2nr(strpart(l:entry, str2nr(l:startindex), (str2nr(l:endindex) - str2nr(l:startindex))))
+    let l:linelength = str2nr(str2nr(l:endindex) - str2nr(l:startindex))
+    let l:linestr = strpart(l:entry, str2nr(l:startindex), l:linelength)
+    let l:linenumber = str2nr(l:linestr)
     " with no match the result is 0.
     " defense in case uncommittedlines is given 
     " invalid input, or l:linenumber is not a number
-    if l:linenumber != 0 && type(l:linenumber) == v:t_number
+    if l:linenumber > 0 && type(l:linenumber) == v:t_number
       call add(l:clean, l:linenumber)
     else
       echoerr 'Problem with linenumber!'
