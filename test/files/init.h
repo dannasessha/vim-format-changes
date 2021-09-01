@@ -1,12 +1,12 @@
-    // newtest Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
-    // newtest3 Distributed under the MIT software license, see the accompanying
+// Distributed under the MIT software license, see the accompanying
 // file COPYING or https://www.opensource.org/licenses/mit-license.php .
 
 #ifndef BITCOIN_INIT_H
 #define BITCOIN_INIT_H
 
-    #include <string>
+#include <string>
 
 #include <tracing.h>
 
