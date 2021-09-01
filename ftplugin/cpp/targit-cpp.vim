@@ -71,7 +71,8 @@ function! CollectCommittedLines(annotatedlines) abort
     if match(l:line, '\v0000000000000000000000000000000000000000\s\d{1,10}\s\d{1,10}') != 0 && match(l:line, '\v\x{40}\s\d{1,10}\s\d{1,10}') == 0
       " trimmedline is used so that later check allows lines 
       " even if they have a differing second or optional third number
-      " as output from git annotate
+      " as output from git annotate: the hash and original linenumber 
+      " + content itself is the 'fingerprint' of the line
       let l:trimmedline = matchstr(l:line, '\v\x{40}\s\d{1,10}')
       call add(l:hashline, l:trimmedline)
       let l:detectcommitted = v:true
@@ -193,12 +194,40 @@ function! FormatChanges() abort
   endif
   let g:ranges = CreateRanges(b:cleanednotcommittedlines)
   let g:arguments = MakeArguments(g:ranges)
+  " check which branch user is on, line starts with `* `
+  let g:branches = systemlist('git branch')
+  for branch in g:branches
+    " delete candidate branch if it exists
+    if match(branch, '  targit-candidate') == 0
+      call system('git branch -d targit-candidate')
+    elseif match(branch, '* ') == 0
+      let l:namelength = strlen(branch - 2)
+      let g:userbranch = strpart(branch, 2, l:namelength)
+    endif
+  endfor
+  " create + switch to branch, commit JIT for formatting
+  " TODO branch should be called: targit_formatting_nameoforiginalbranch_hash
+  call system('git checkout -b targit-candidate')
+  call system('git commit -am "formatting branch"')
   
   function! s:Event(job_id, data, event) dict
     if a:event == 'exit'
       edit!
       noautocmd write
-      call s:CheckUncommitted()
+      " check if any previously committed lines have disappeared or changed
+      " if so, will throw an error
+      call s:CheckCommitted()
+      " if Check is passed, then write current state of formatted 
+      " file back to branch the user was on.
+      if g:grade == v:true
+        " TODO push changes back to g:userbranch ...?
+        let g:finalgrade = v:true
+        " TODO (bonus) then remove temp branch?
+        " TODO (bonus) doublecheck with master branch, that no lines changed
+        " after moving back to userbranch
+      else
+        echoerr 'error! no grade. should be impossible.'
+      endif
     else
       echoerr 'error! condition other than exit'
     endif
@@ -207,7 +236,7 @@ function! FormatChanges() abort
   let s:callbacks = { 'on_exit': function('s:Event') } 
   call jobstart(('clang-format' . g:arguments), s:callbacks)
 
-  function! s:CheckUncommitted() abort
+  function! s:CheckCommitted() abort
     "make tuple-like lists to check
     let g:checkannotatedlines = IngestGitAnnotate()
     let g:checkcommittedlines = CollectCommittedLines(deepcopy(g:checkannotatedlines))
@@ -215,12 +244,21 @@ function! FormatChanges() abort
     for g:linetuple in deepcopy(g:committedlines)
       if count(g:checkcommittedlines, g:linetuple) != 1
         echoerr 'ERROR!!! committedlines changed (strong assert)' . string(g:linetuple) . ' is not in ' . string(g:checkcommittedlines)
+        " TODO (bonus) if fail, fail gracefully.
+      else
+        let g:grade = v:true
       endif
     endfor
   endfunction
 endfunction
 
 augroup CPP
+"TODO bufload check for clean working tree : warn user & exit if not
+"autocmd BufReadPre *.h call ()
+"autocmd BufReadPre *.c call ()
+"autocmd BufReadPre *.cxx call ()
+"autocmd BufReadPre *.hpp call ()
+"autocmd BufReadPre *.cpp call () 
 autocmd BufWritePost *.h call FormatChanges() 
 autocmd BufWritePost *.c call FormatChanges()
 autocmd BufWritePost *.cxx call FormatChanges()
