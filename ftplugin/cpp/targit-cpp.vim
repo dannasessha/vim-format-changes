@@ -210,9 +210,6 @@ function! FormatChanges() abort
   endfor
   " create + switch to branch, commit JIT for formatting
   call system('git checkout -b targit-candidate')
-  let l:headhash = strpart(system('git rev-parse HEAD'), 0, 8)
-  let l:commitmessage = '"targit formatting : from ' .. g:userbranch .. ' ' .. l:headhash .. ' "'
-  call system('git commit -am ' .. l:commitmessage)
   
   function! s:Event(job_id, data, event) dict
     if a:event == 'exit'
@@ -223,6 +220,9 @@ function! FormatChanges() abort
       " if Check is passed, then send current state of formatted 
       " file back to branch the user was on.
       if s:CheckCommitted() == v:true
+        let l:headhash = strpart(system('git rev-parse HEAD'), 0, 8)
+        let l:commitmessage = '"targit formatting : from ' .. g:userbranch .. ' ' .. l:headhash .. ' "'
+        call system('git commit -am ' .. l:commitmessage)
         call system('git checkout --detach')
         call system('git reset --soft ' .. g:userbranch)
         call system('git checkout ' .. g:userbranch)
