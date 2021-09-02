@@ -3,4 +3,4 @@
 " removed call to vim, -Nu flag and .vim files, +Vader* suffix and cli call to cat
 filetype on
 syntax enable
-source ../../ftplugin/cpp/targit-cpp.vim
+source ~/backport-clang/ftplugin/cpp/targit-cpp.vim

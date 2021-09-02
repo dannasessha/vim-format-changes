@@ -199,9 +199,11 @@ function! FormatChanges() abort
   for branch in g:branches
     " delete candidate branch if it exists
     if match(branch, '  targit-candidate') == 0
-      call system('git branch -d targit-candidate')
+      " TODO should this be here?
+      " call system('git branch -d targit-candidate')
     elseif match(branch, '* ') == 0
-      let l:namelength = strlen(branch - 2)
+      " TODO deal with stuff like (HEAD detached from 34f7ac8)
+      let l:namelength = strlen(branch)
       let g:userbranch = strpart(branch, 2, l:namelength)
     endif
   endfor
@@ -220,8 +222,12 @@ function! FormatChanges() abort
       " if Check is passed, then write current state of formatted 
       " file back to branch the user was on.
       if g:grade == v:true
-        " TODO push changes back to g:userbranch ...?
+        ". TODO push changes back to g:userbranch ...?
         let g:finalgrade = v:true
+        call system('git checkout --detach')
+        call system('git reset --soft ' .. g:userbranch)
+        call system('git checkout ' .. g:userbranch)
+        let g:finalfinalgrade = v:true
         " TODO (bonus) then remove temp branch?
         " TODO (bonus) doublecheck with master branch, that no lines changed
         " after moving back to userbranch
