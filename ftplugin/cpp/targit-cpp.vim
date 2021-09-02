@@ -199,40 +199,43 @@ function! FormatChanges() abort
   for branch in g:branches
     " delete candidate branch if it exists
     if match(branch, '  targit-candidate') == 0
-      " TODO should this be here?
-      " call system('git branch -d targit-candidate')
+      call system('git branch -D targit-candidate')
+    elseif match(branch, '* (HEAD detached from ') == 0
+      " TODO deal better with stuff like (HEAD detached from 34f7ac8)
+      echoerr 'error! HEAD detached.'
     elseif match(branch, '* ') == 0
-      " TODO deal with stuff like (HEAD detached from 34f7ac8)
       let l:namelength = strlen(branch)
       let g:userbranch = strpart(branch, 2, l:namelength)
     endif
   endfor
   " create + switch to branch, commit JIT for formatting
-  " TODO branch should be called: targit_formatting_nameoforiginalbranch_hash
   call system('git checkout -b targit-candidate')
-  call system('git commit -am "formatting branch"')
+  let l:headhash = strpart(system('git rev-parse HEAD'), 0, 8)
+  let l:commitmessage = '"targit formatting : from ' .. g:userbranch .. ' ' .. l:headhash .. ' "'
+  call system('git commit -am ' .. l:commitmessage)
   
   function! s:Event(job_id, data, event) dict
     if a:event == 'exit'
       edit!
       noautocmd write
-      " check if any previously committed lines have disappeared or changed
-      " if so, will throw an error
-      call s:CheckCommitted()
-      " if Check is passed, then write current state of formatted 
+      " check if any previously committed lines have disappeared or
+      " changed. if so, throw an error
+      " if Check is passed, then send current state of formatted 
       " file back to branch the user was on.
-      if g:grade == v:true
-        ". TODO push changes back to g:userbranch ...?
-        let g:finalgrade = v:true
+      if s:CheckCommitted() == v:true
         call system('git checkout --detach')
         call system('git reset --soft ' .. g:userbranch)
         call system('git checkout ' .. g:userbranch)
-        let g:finalfinalgrade = v:true
-        " TODO (bonus) then remove temp branch?
-        " TODO (bonus) doublecheck with master branch, that no lines changed
-        " after moving back to userbranch
+        " TODO rebasing / squash?
+        " doublecheck with original user branch, 
+        " that no committed lines changed
       else
-        echoerr 'error! no grade. should be impossible.'
+        echoerr 'error! check committed failed.'
+      endif
+      if s:CheckCommitted() == v:true
+        " successful completion 
+      else
+        echoerr 'error! check committed failed. should be impossible.'
       endif
     else
       echoerr 'error! condition other than exit'
@@ -250,9 +253,9 @@ function! FormatChanges() abort
     for g:linetuple in deepcopy(g:committedlines)
       if count(g:checkcommittedlines, g:linetuple) != 1
         echoerr 'ERROR!!! committedlines changed (strong assert)' . string(g:linetuple) . ' is not in ' . string(g:checkcommittedlines)
-        " TODO (bonus) if fail, fail gracefully.
+        " TODO if fail, fail gracefully.
       else
-        let g:grade = v:true
+        return v:true
       endif
     endfor
   endfunction
