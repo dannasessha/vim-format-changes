@@ -182,6 +182,10 @@ endfunction
 function! FormatChanges() abort
   let g:totallines = FindTotalLines()
   let g:annotatedlines = IngestGitAnnotate()
+  if g:annotatedlines == ['fatal: not a git repository (or any of the parent directories): .git']
+    :echo('Warning! Targit plugin loaded and running but no git repo detected.')
+    return
+  endif
   let b:notcommittedlines = CollectUncommittedLines(deepcopy(g:annotatedlines))
   " if no ranges, stop.
   if b:notcommittedlines == []
